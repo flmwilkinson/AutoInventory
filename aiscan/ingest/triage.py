@@ -16,6 +16,7 @@ import re
 from pathlib import Path
 
 from aiscan.context import OrgPack
+from aiscan.ingest.source import Source, as_source
 from aiscan.sinks.engine import load_host_registry
 
 _AI_PACKAGES = (
@@ -144,12 +145,12 @@ def _walk_files(repo_root: Path) -> list[Path]:
     return sorted(out)
 
 
-def count_source_files(repo_root: Path) -> dict[str, int]:
+def count_source_files(source: Source | Path) -> dict[str, int]:
     """Language census: source-file counts by extension (SPEC-3 coverage
     honesty). Cheap — extensions only, no file reads."""
     counts: dict[str, int] = {}
-    for path in _walk_files(repo_root):
-        ext = path.suffix.lower()
+    for rel in as_source(source).list_files():
+        ext = Path(rel).suffix.lower()  # exact parity with the old path.suffix
         if ext in _SOURCE_EXTS:
             counts[ext] = counts.get(ext, 0) + 1
     return dict(sorted(counts.items()))

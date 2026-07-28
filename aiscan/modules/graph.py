@@ -12,6 +12,7 @@ import tomllib
 from dataclasses import replace as dc_replace
 from pathlib import Path
 
+from aiscan.ingest.source import Source, as_source
 from aiscan.ir.nodes import ModuleIR
 from aiscan.modules.symbols import SymbolTable, build_symbol_table
 from aiscan.modules.ts_graph import TsConfig, resolve_specifier, ts_module_name
@@ -23,12 +24,19 @@ def _norm_pkg(name: str) -> str:
     return name.lower().replace("-", "_").replace(".", "_")
 
 
-def read_package_versions(repo_root: Path) -> dict[str, str]:
+def read_package_versions(source: Source | Path) -> dict[str, str]:
     """Best-effort ``{normalised package name: version}`` from lockfiles."""
+    src = as_source(source)
     versions: dict[str, str] = {}
-    for req in sorted(repo_root.glob("requirements*.txt")):
+    # Root-level requirements*.txt (the old glob was non-recursive).
+    reqs = sorted(
+        f
+        for f in src.list_files()
+        if "/" not in f and f.startswith("requirements") and f.endswith(".txt")
+    )
+    for req in reqs:
         try:
-            text = req.read_text(encoding="utf-8", errors="replace")
+            text = src.read_text(req)
         except OSError:
             continue
         for line in text.splitlines():
@@ -36,11 +44,10 @@ def read_package_versions(repo_root: Path) -> dict[str, str]:
             if m:
                 versions[_norm_pkg(m.group(1))] = m.group(2)
     for lock_name in ("poetry.lock", "uv.lock"):
-        lock = repo_root / lock_name
-        if not lock.is_file():
+        if not src.exists(lock_name):
             continue
         try:
-            data = tomllib.loads(lock.read_text(encoding="utf-8", errors="replace"))
+            data = tomllib.loads(src.read_text(lock_name))
         except (tomllib.TOMLDecodeError, OSError):
             continue
         packages = data.get("package", [])

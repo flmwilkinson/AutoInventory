@@ -12,6 +12,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from aiscan.incremental.manifest import Manifest, hash_files
+from aiscan.ingest.source import Source, as_source
 
 # Bump on ANY change to analysis logic whose output a cached fact could encode:
 # parsers, resolver, sink registry/shape, frontend packs/engines, side-effects,
@@ -40,37 +41,47 @@ class GateDecision:
     reason: str
 
 
-def _walk_names(repo_root: Path, name: str) -> list[str]:
+def _walk_names(src: Source, name: str) -> list[str]:
+    # list_files() already excludes the vendored/VCS/build skip-dirs.
     out: list[str] = []
-    for p in repo_root.rglob(name):
-        if any(part in {".git", "node_modules", "__pycache__", "venv"} for part in p.parts):
-            continue
-        out.append(p.relative_to(repo_root).as_posix())
-        if len(out) >= _MAX_WALK:
-            break
+    for rel in src.list_files():
+        if rel.rsplit("/", 1)[-1] == name:
+            out.append(rel)
+            if len(out) >= _MAX_WALK:
+                break
     return out
 
 
-def deps_files(repo_root: Path) -> list[str]:
+def _matches_deps_glob(name: str) -> bool:
+    return (
+        (name.startswith("requirements") and name.endswith(".txt"))
+        or name in ("poetry.lock", "uv.lock", "pyproject.toml")
+    )
+
+
+def deps_files(source: Source | Path) -> list[str]:
     """Every dependency-manifest / lockfile path that feeds version resolution."""
-    out: list[str] = []
-    for pattern in _DEPS_GLOBS:
-        out.extend(p.relative_to(repo_root).as_posix() for p in repo_root.glob(pattern))
+    src = as_source(source)
+    # _DEPS_GLOBS are root-level (the old glob was non-recursive); _DEPS_NAMES
+    # (package.json + JS lockfiles) are found anywhere in the tree.
+    out: list[str] = [f for f in src.list_files() if "/" not in f and _matches_deps_glob(f)]
     for name in _DEPS_NAMES:
-        out.extend(_walk_names(repo_root, name))
+        out.extend(_walk_names(src, name))
     return sorted(set(out))
 
 
-def tsconfig_files(repo_root: Path) -> list[str]:
-    return sorted(set(_walk_names(repo_root, _TSCONFIG_NAME)))
+def tsconfig_files(source: Source | Path) -> list[str]:
+    return sorted(set(_walk_names(as_source(source), _TSCONFIG_NAME)))
 
 
-def deps_hash(repo_root: Path) -> str:
-    return hash_files(repo_root, deps_files(repo_root))
+def deps_hash(source: Source | Path) -> str:
+    src = as_source(source)
+    return hash_files(src, deps_files(src))
 
 
-def tsconfig_hash(repo_root: Path) -> str:
-    return hash_files(repo_root, tsconfig_files(repo_root))
+def tsconfig_hash(source: Source | Path) -> str:
+    src = as_source(source)
+    return hash_files(src, tsconfig_files(src))
 
 
 def org_pack_hash(org_pack_path: Path | None) -> str:

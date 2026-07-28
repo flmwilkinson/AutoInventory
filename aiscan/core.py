@@ -34,6 +34,7 @@ from aiscan.graph.build import build_graph
 from aiscan.graph.model import Graph
 from aiscan.graph.queries import bundle_bom
 from aiscan.ingest.env_defaults import collect_env_defaults
+from aiscan.ingest.source import Source, as_source
 from aiscan.ingest.triage import count_source_files, run_triage
 from aiscan.inventory.bom import build_ai_bom
 from aiscan.inventory.emit import build_record, facts_jsonl
@@ -50,41 +51,30 @@ from aiscan.sinks.engine import SinkEngine, load_host_registry
 if TYPE_CHECKING:
     from aiscan.store import StateStore
 
-_SKIP_DIRS = {".git", "__pycache__", "node_modules", "venv"}
 
-
-def discover_python_files(repo_root: Path) -> list[str]:
+def discover_python_files(source: Source | Path) -> list[str]:
     """Repo-relative posix paths of all scannable .py files, sorted."""
-    return _discover(repo_root, (".py",))
+    return _discover(source, (".py",))
 
 
-def discover_source_files(repo_root: Path) -> list[str]:
+def discover_source_files(source: Source | Path) -> list[str]:
     """Repo-relative posix paths of every file the pipeline analyses
     (Python + TS/JS), sorted."""
-    return _discover(repo_root, tuple(sorted(PIPELINE_EXTS)))
+    return _discover(source, tuple(sorted(PIPELINE_EXTS)))
 
 
-def _discover(repo_root: Path, exts: tuple[str, ...]) -> list[str]:
-    found: list[str] = []
-    stack = [repo_root]
-    while stack:
-        current = stack.pop()
-        try:
-            entries = sorted(current.iterdir())
-        except OSError:
+def _discover(source: Source | Path, exts: tuple[str, ...]) -> list[str]:
+    out: list[str] = []
+    for rel in as_source(source).list_files():
+        parts = rel.split("/")
+        # Source discovery is stricter than the base skip policy: also skip
+        # dot-*directories*. A dotted *file* (e.g. .foo.py) is kept if it matches.
+        if any(p.startswith(".") for p in parts[:-1]):
             continue
-        for entry in entries:
-            name = entry.name
-            if entry.is_dir():
-                if name in _SKIP_DIRS or name.startswith("."):
-                    continue
-                stack.append(entry)
-            elif entry.is_file() and name.endswith(exts):
-                # Skip TS declaration files: type-only, never contain agents.
-                if name.endswith(".d.ts"):
-                    continue
-                found.append(entry.relative_to(repo_root).as_posix())
-    return sorted(found)
+        name = parts[-1]
+        if name.endswith(exts) and not name.endswith(".d.ts"):
+            out.append(rel)
+    return out  # list_files() is sorted, so out is too
 
 
 def _over_budget(
@@ -145,6 +135,9 @@ class ScanRequest:
     org_pack: OrgPack
     logger: logging.Logger
     dirty: bool = False
+    # SPEC-10 §H: the read view of the tree. Defaults to a LocalDirSource over
+    # repo_root; a service can inject a non-filesystem source (e.g. GitHub blobs).
+    source: Source | None = None
     # LLM tiers (opt-in; call_fn injection lets a caller supply its own client).
     # llm_api_key is the caller-supplied credential — the core never reads it
     # from the environment (SPEC-10 §4); the CLI adapter resolves it and injects.
@@ -309,10 +302,15 @@ def scan(request: ScanRequest) -> ScanResult:
     )
     ctx.logger.info("scanning %s @ %s", ctx.repo_root, ctx.commit)
 
+    # SPEC-10 §H: one read view of the tree, shared by every file reader below
+    # (the census, discovery, and the parse loop). A caller may inject a
+    # non-filesystem source; otherwise it is a LocalDirSource over repo_root.
+    tree = as_source(request.source if request.source is not None else ctx.repo_root)
+
     t_triage = time.monotonic()
     triage_signals = run_triage(ctx.repo_root, ctx.org_pack)
     ctx.health.triage = {k: triage_signals[k] for k in sorted(triage_signals)}
-    ctx.health.language_files = count_source_files(ctx.repo_root)
+    ctx.health.language_files = count_source_files(tree)
     ctx.health.stage_ms["triage"] = int((time.monotonic() - t_triage) * 1000)
     owner_hint = owner_candidate(ctx.repo_root, ctx.logger)
     if not triage_signals:
@@ -334,7 +332,7 @@ def scan(request: ScanRequest) -> ScanResult:
         return ScanResult(record=record, graph=Graph(), fact_lines=[])
 
     t0 = time.monotonic()
-    source_files = discover_source_files(ctx.repo_root)
+    source_files = discover_source_files(tree)
     # SPEC-10 §L: a pathological file count trips the guard before we even parse.
     over = _over_budget(ctx.settings, files=len(source_files), loc=0)
     if over is not None:
@@ -346,13 +344,13 @@ def scan(request: ScanRequest) -> ScanResult:
         if parser is None:
             continue
         try:
-            source = (ctx.repo_root / rel_path).read_text(encoding="utf-8", errors="replace")
+            text = tree.read_text(rel_path)
         except OSError as exc:
             ctx.health.parse_errors.append(
                 ParseErrorInfo(path=rel_path, message=f"unreadable: {exc}")
             )
             continue
-        result = parser.parse(rel_path, source)
+        result = parser.parse(rel_path, text)
         if isinstance(result, ParseErrorInfo):
             ctx.health.parse_errors.append(result)
             ctx.logger.info("parse error in %s: %s", rel_path, result.message)
@@ -369,7 +367,7 @@ def scan(request: ScanRequest) -> ScanResult:
         return _bounded_result(ctx, owner_hint, over)
 
     t1 = time.monotonic()
-    versions = read_package_versions(ctx.repo_root)
+    versions = read_package_versions(tree)
     ts_config = read_ts_config(ctx.repo_root)
     module_graph = ModuleGraph(modules_by_path, versions, ts_config=ts_config)
     tables = module_graph.build_symbol_tables()

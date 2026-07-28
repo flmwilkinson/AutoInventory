@@ -13,6 +13,8 @@ import json
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
+from aiscan.ingest.source import Source, as_source
+
 
 @dataclass(frozen=True)
 class Manifest:
@@ -73,18 +75,16 @@ def write_manifest(path: Path, manifest: Manifest) -> None:
     path.write_text(manifest.to_json(), encoding="utf-8")
 
 
-def hash_files(repo_root: Path, rel_paths: list[str]) -> str:
+def hash_files(source: Source | Path, rel_paths: list[str]) -> str:
     """Stable digest of the given files' contents (missing files contribute
     their name only), for the manifest's global-input hashes. Deterministic:
     inputs are sorted, and both path and bytes feed the digest."""
+    src = as_source(source)
     h = hashlib.sha256()
     for rel in sorted(set(rel_paths)):
         h.update(rel.encode("utf-8"))
         h.update(b"\0")
-        fp = repo_root / rel
-        try:
-            h.update(fp.read_bytes())
-        except OSError:
-            h.update(b"<absent>")
+        data = src.read_bytes(rel)
+        h.update(data if data is not None else b"<absent>")
         h.update(b"\0")
     return h.hexdigest()[:16]
