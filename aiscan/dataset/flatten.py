@@ -235,6 +235,7 @@ def flatten(record: dict[str, Any]) -> dict[str, list[Row]]:
                 "transport": mcp.get("transport"),
                 "declared_tools": _j(mcp.get("declared_tools")),
                 "approval_policy": mcp.get("approval_policy"),
+                "attached_agent_count": mcp.get("attached_agent_count"),
             }
         )
 

@@ -115,3 +115,38 @@ class TestProviderClass:
         assert usage["provider_class"]["value"] == "vendor_external"
         kinds = {f["kind"] for f in record["findings"]}
         assert "orphan_model_usage" in kinds
+
+
+def test_orphan_mcp_server_flagged_when_unattached() -> None:
+    """SPEC_INVENTORY: an MCP server bound to no agent is shadow tooling and is
+    surfaced; an attached one is not."""
+    from aiscan.inventory.schema import AgentRecord, DetectionInfo, McpRecord
+
+    org = OrgPack()
+    reg = load_host_registry(org)
+    ghost = McpRecord(server_id="ghost", transport="http", evidence=("m.py:1",))
+
+    orphan = derive_record(
+        Record(bundle_id="repo:x", name="x", mcp_servers=(ghost,)), org, reg
+    )
+    assert "orphan_mcp_server" in {f.kind for f in orphan.findings}
+    assert orphan.mcp_servers[0].attached_agent_count == 0
+
+    wired = derive_record(
+        Record(
+            bundle_id="repo:x",
+            name="x",
+            agents=(
+                AgentRecord(
+                    agent_id="a",
+                    detection=DetectionInfo(method="m", confidence="high", evidence=("a.py:1",)),
+                    mcp_servers=("ghost",),
+                ),
+            ),
+            mcp_servers=(ghost,),
+        ),
+        org,
+        reg,
+    )
+    assert "orphan_mcp_server" not in {f.kind for f in wired.findings}
+    assert wired.mcp_servers[0].attached_agent_count == 1

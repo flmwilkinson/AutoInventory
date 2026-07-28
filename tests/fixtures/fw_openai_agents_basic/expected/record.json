@@ -464,6 +464,7 @@
         "source": "derived",
         "value": true
       },
+      "attached_agent_count": 1,
       "declared_tools": "dynamic",
       "evidence": [
         "main.py:14-21",

@@ -58,6 +58,7 @@ SEVERITY: dict[str, Severity] = {
     "ambiguous_agent_shape": "low",
     "adjudication_unavailable": "low",
     "llm_call_in_test_or_main": "info",
+    "orphan_mcp_server": "medium",
 }
 
 _PRIVILEGE_FLAGS = ("moves_money", "executes_code", "mutates_identities")
@@ -260,7 +261,7 @@ def _derive_tool(tool: ToolRecord, org: OrgPack) -> ToolRecord:
     )
 
 
-def _derive_mcp(mcp: McpRecord) -> McpRecord:
+def _derive_mcp(mcp: McpRecord, attach_count: int) -> McpRecord:
     if mcp.transport == "stdio":
         risk = "low"
     else:
@@ -272,6 +273,7 @@ def _derive_mcp(mcp: McpRecord) -> McpRecord:
                 value=mcp.approval_policy is not None, evidence=mcp.evidence
             ),
             "transport_risk": DerivedValue(value=risk, evidence=mcp.evidence),
+            "attached_agent_count": attach_count,
         }
     )
 
@@ -573,13 +575,31 @@ def derive_record(record: Record, org: OrgPack, registry: HostRegistry) -> Recor
         for a in record.agents
     ]
     tools = [_derive_tool(t, org) for t in record.tools]
-    mcp = [_derive_mcp(m) for m in record.mcp_servers]
+    # SPEC_INVENTORY: an MCP server bound to no agent is unwired remote-tool config
+    # (shadow tooling) — count attachments so it can be surfaced.
+    mcp_attach: dict[str, int] = {}
+    for a in record.agents:
+        for sid in a.mcp_servers:
+            mcp_attach[sid] = mcp_attach.get(sid, 0) + 1
+    mcp = [_derive_mcp(m, mcp_attach.get(m.server_id, 0)) for m in record.mcp_servers]
     usages = [_derive_usage(u, registry) for u in record.model_usages]
 
     findings = [_grade(f) for f in record.findings]
     # Grade the derived findings too — their severity now comes from the SEVERITY
     # map (the single source) rather than an inline literal at each creation site.
     findings.extend(_grade(f) for f in _derived_findings(agents, usages, registry))
+    findings.extend(
+        _grade(
+            FindingRecord(
+                kind="orphan_mcp_server",
+                evidence=m.evidence,
+                detail="MCP server declared but attached to no agent (unwired remote tooling)",
+                subject_ref=m.server_id,
+            )
+        )
+        for m in mcp
+        if m.attached_agent_count == 0
+    )
 
     # SPEC-3/4 coverage honesty: source files in languages the pipeline cannot
     # analyse were skipped. With AI signals present that is a real coverage gap

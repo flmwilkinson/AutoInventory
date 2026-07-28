@@ -51,7 +51,7 @@ _COLUMNS: dict[str, tuple[str, ...]] = {
     ),
     "mcp_servers": (
         "bundle_id", "scan_id", "server_id", "server", "transport",
-        "declared_tools", "approval_policy",
+        "declared_tools", "approval_policy", "attached_agent_count",
     ),
     "model_usages": (
         "bundle_id", "scan_id", "usage_id", "model_value", "method",

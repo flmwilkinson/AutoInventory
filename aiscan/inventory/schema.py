@@ -304,6 +304,9 @@ class McpRecord(BaseModel):
     # [D derived] SPEC-3 §3.2
     approval_required: DerivedValue | None = None
     transport_risk: DerivedValue | None = None
+    # [D derived] SPEC_INVENTORY: how many agents attach this server. 0 = an
+    # unwired remote-tool config (shadow tooling) — surfaced as orphan_mcp_server.
+    attached_agent_count: int = 0
     # [E] enrichment
     server_summary: EnrichedSlot = EnrichedSlot()
 
