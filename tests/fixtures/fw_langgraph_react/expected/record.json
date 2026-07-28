@@ -47,6 +47,7 @@
         "value": null
       },
       "handoffs": [],
+      "has_additional_models": false,
       "is_entrypoint": false,
       "language": "python",
       "liveness": {
@@ -63,6 +64,7 @@
         "deployment": null,
         "endpoint": "https://gw.internal.example/v1",
         "method": "attribution:constant",
+        "provider_class": "unknown",
         "source": "detected",
         "value": "bank-gpt4"
       },

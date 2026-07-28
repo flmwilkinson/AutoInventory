@@ -49,6 +49,7 @@
         "value": null
       },
       "handoffs": [],
+      "has_additional_models": false,
       "is_entrypoint": false,
       "language": "python",
       "liveness": {
@@ -66,6 +67,7 @@
         "deployment": null,
         "endpoint": null,
         "method": "attribution:constant",
+        "provider_class": "vendor_external",
         "source": "detected",
         "value": "gpt-4o-mini"
       },

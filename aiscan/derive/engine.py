@@ -42,8 +42,10 @@ Severity = Literal["high", "medium", "low", "info"]
 
 # SPEC-3 §3.3 fixed kind → severity map (report sorts by it).
 # Kind -> severity, the single source graded by ``_grade``. Kinds whose severity
-# is *conditional* (unanalysed_language_code, declared_agent_artefact) are set
-# inline at their one creation site and so are intentionally absent here.
+# is *conditional* (unanalysed_language_code, declared_agent_artefact,
+# orphan_model_usage) are set inline at their one creation site — a bare LLM
+# call's severity follows its endpoint risk, not a fixed level — so are
+# intentionally absent here.
 SEVERITY: dict[str, Severity] = {
     "secret_literal_redacted": "high",
     "unapproved_gateway": "high",
@@ -56,7 +58,6 @@ SEVERITY: dict[str, Severity] = {
     "ambiguous_agent_shape": "low",
     "adjudication_unavailable": "low",
     "llm_call_in_test_or_main": "info",
-    "orphan_model_usage": "info",
 }
 
 _PRIVILEGE_FLAGS = ("moves_money", "executes_code", "mutates_identities")
@@ -203,6 +204,7 @@ def _derive_agent(
     tools_by_id: dict[str, ToolRecord],
     org: OrgPack,
     reached_from_entrypoints: set[str],
+    registry: HostRegistry,
 ) -> AgentRecord:
     if agent.routes:
         role = "router"
@@ -222,8 +224,17 @@ def _derive_agent(
 
     flags, flag_evidence = _agent_flags(agent, tools_by_id, org)
 
+    # SPEC_INVENTORY: classify the agent's OWN model endpoint so approved-model
+    # reconciliation works at the agent level, not only on the floating usages.
+    model = agent.model
+    if model is not None:
+        model = model.model_copy(
+            update={"provider_class": _provider_class(model.endpoint, registry)}
+        )
+
     return agent.model_copy(
         update={
+            "model": model,
             "role_class": DerivedValue(value=role, evidence=agent.detection.evidence),
             "autonomy_level": DerivedValue(value=autonomy, evidence=autonomy_evidence),
             "capability_flags": DerivedValue(value=flags, evidence=flag_evidence),
@@ -361,12 +372,24 @@ def _derived_findings(
                 )
             )
         if not usage.in_agent and usage.task != "embedding":
+            # SPEC_INVENTORY: a bare LLM call IS live AI usage, not a "floating"
+            # non-event. Severity follows RISK (externality), not agent-wiring: a
+            # call to an internal gateway is governed (info); an ungoverned
+            # external-vendor call is a real exposure (medium). An unapproved host
+            # already raises its own `unapproved_gateway` finding at high, so this
+            # deliberately does not double-count that.
+            external = _provider_class(usage.endpoint, registry) == "vendor_external"
             found.append(
                 FindingRecord(
                     kind="orphan_model_usage",
                     evidence=usage.evidence,
-                    detail="LLM call site outside any detected agent",
+                    detail=(
+                        "external LLM call site outside any detected agent"
+                        if external
+                        else "LLM call site outside any detected agent"
+                    ),
                     subject_ref="model_usage",
+                    severity="medium" if external else "info",
                 )
             )
         if _is_unresolved(usage.model.value):
@@ -546,7 +569,7 @@ def derive_record(record: Record, org: OrgPack, registry: HostRegistry) -> Recor
     reached = _reached_from_entrypoints(agents_by_id)
 
     agents = [
-        _derive_agent(a, agents_by_id, in_handoffs, tools_by_id, org, reached)
+        _derive_agent(a, agents_by_id, in_handoffs, tools_by_id, org, reached, registry)
         for a in record.agents
     ]
     tools = [_derive_tool(t, org) for t in record.tools]

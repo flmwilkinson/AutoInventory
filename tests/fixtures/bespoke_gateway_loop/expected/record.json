@@ -49,6 +49,7 @@
         "value": null
       },
       "handoffs": [],
+      "has_additional_models": false,
       "is_entrypoint": false,
       "language": "python",
       "liveness": {
@@ -65,6 +66,7 @@
         "deployment": null,
         "endpoint": "https://gw.internal.example/llm/v1/chat",
         "method": "attribution:literal",
+        "provider_class": "unknown",
         "source": "detected",
         "value": "internal-x1"
       },

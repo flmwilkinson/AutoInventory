@@ -226,6 +226,9 @@ def build_record(
                     # signal onto the record so liveness can be derived.
                     is_entrypoint=fact.entrypoint,
                     model=model_binding,
+                    # SPEC_INVENTORY: ``model`` keeps only model_ids[0]; flag when
+                    # the graph bound more so the undercount stays visible.
+                    has_additional_models=len(agent_bom.model_ids) > 1,
                     system_prompt=prompt_binding,
                     tools=tuple(
                         sorted(

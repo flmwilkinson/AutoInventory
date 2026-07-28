@@ -29,7 +29,8 @@ _COLUMNS: dict[str, tuple[str, ...]] = {
     "agents": (
         "bundle_id", "scan_id", "agent_id", "location", "language", "role_class",
         "autonomy_level", "liveness", "is_entrypoint", "model_value",
-        "model_endpoint", "api_style", "prompt_dynamic", "tool_count",
+        "model_endpoint", "api_style", "model_provider_class",
+        "has_additional_models", "prompt_dynamic", "tool_count",
         "reachable_tool_count", "moves_money", "executes_code",
         "mutates_identities", "sends_external", "reads_sensitive",
         "detection_method", "confidence", "agent_summary",

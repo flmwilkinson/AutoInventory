@@ -47,6 +47,7 @@
         "value": null
       },
       "handoffs": [],
+      "has_additional_models": false,
       "is_entrypoint": false,
       "language": "typescript",
       "liveness": {
@@ -63,6 +64,7 @@
         "deployment": null,
         "endpoint": null,
         "method": "attribution:literal",
+        "provider_class": "vendor_external",
         "source": "detected",
         "value": "gpt-4o"
       },
@@ -148,6 +150,7 @@
       "handoffs": [
         "spanish-agent"
       ],
+      "has_additional_models": false,
       "is_entrypoint": false,
       "language": "typescript",
       "liveness": {
@@ -164,6 +167,7 @@
         "deployment": null,
         "endpoint": null,
         "method": "attribution:literal",
+        "provider_class": "vendor_external",
         "source": "detected",
         "value": "gpt-4o"
       },

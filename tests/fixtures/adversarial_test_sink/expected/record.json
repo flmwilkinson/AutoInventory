@@ -212,21 +212,21 @@
       "subject_ref": null
     },
     {
-      "detail": "LLM call site outside any detected agent",
+      "detail": "external LLM call site outside any detected agent",
       "evidence": [
         "tests/test_client.py:7-13"
       ],
       "kind": "orphan_model_usage",
-      "severity": "info",
+      "severity": "medium",
       "subject_ref": "model_usage"
     },
     {
-      "detail": "LLM call site outside any detected agent",
+      "detail": "external LLM call site outside any detected agent",
       "evidence": [
         "tool.py:11-17"
       ],
       "kind": "orphan_model_usage",
-      "severity": "info",
+      "severity": "medium",
       "subject_ref": "model_usage"
     }
   ],

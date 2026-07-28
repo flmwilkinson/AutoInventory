@@ -50,6 +50,7 @@
         "value": null
       },
       "handoffs": [],
+      "has_additional_models": false,
       "is_entrypoint": false,
       "language": "python",
       "liveness": {
@@ -66,6 +67,7 @@
         "deployment": null,
         "endpoint": "https://llm.bank.internal/v1/chat/completions",
         "method": "attribution:wrapper_default",
+        "provider_class": "internal_gateway",
         "source": "detected",
         "value": "bank-small-1"
       },
@@ -375,12 +377,12 @@
       "subject_ref": "model_usage"
     },
     {
-      "detail": "LLM call site outside any detected agent",
+      "detail": "external LLM call site outside any detected agent",
       "evidence": [
         "reporting.py:12-12"
       ],
       "kind": "orphan_model_usage",
-      "severity": "info",
+      "severity": "medium",
       "subject_ref": "model_usage"
     },
     {

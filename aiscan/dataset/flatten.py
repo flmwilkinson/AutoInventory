@@ -159,6 +159,9 @@ def flatten(record: dict[str, Any]) -> dict[str, list[Row]]:
                 "model_value": _j(model.get("value")),
                 "model_endpoint": _j(model.get("endpoint")),
                 "api_style": model.get("api_style"),
+                # SPEC_INVENTORY: agent-level model governance signals.
+                "model_provider_class": model.get("provider_class"),
+                "has_additional_models": bool(agent.get("has_additional_models")),
                 "prompt_dynamic": bool((agent.get("system_prompt") or {}).get("dynamic")),
                 "tool_count": len(agent.get("tools") or []),
                 "reachable_tool_count": (

@@ -188,12 +188,12 @@
   "env_defaults": {},
   "findings": [
     {
-      "detail": "LLM call site outside any detected agent",
+      "detail": "external LLM call site outside any detected agent",
       "evidence": [
         "review.py:16-23"
       ],
       "kind": "orphan_model_usage",
-      "severity": "info",
+      "severity": "medium",
       "subject_ref": "model_usage"
     }
   ],

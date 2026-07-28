@@ -161,6 +161,11 @@ class ModelBinding(BaseModel):
     endpoint: JsonRepr = None
     api_style: Literal["openai", "anthropic", "bedrock", "vertex", "unknown"] = "unknown"
     deployment: JsonRepr = None
+    # [D derived] SPEC_INVENTORY: vendor_external | internal_gateway | self_hosted
+    # | unknown — projected onto the agent's own model so "which agents run an
+    # external/unapproved model" is answerable from the agent, not only the
+    # floating model_usages side. Filled by derive.
+    provider_class: str | None = None
 
 
 class PromptBinding(BaseModel):
@@ -201,6 +206,10 @@ class AgentRecord(BaseModel):
     # [D] source language of the defining file (SPEC-4).
     language: Literal["python", "typescript", "javascript"] = "python"
     model: ModelBinding | None = None
+    # [D] SPEC_INVENTORY: the agent binds >1 model (router+tool model, fallback
+    # chain, …). ``model`` shows the first; this flags the undercount so a bank
+    # model register never silently misses the others (full de-truncation is later).
+    has_additional_models: bool = False
     system_prompt: PromptBinding | None = None
     tools: tuple[str, ...] = ()
     mcp_servers: tuple[str, ...] = ()
