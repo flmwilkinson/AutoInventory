@@ -199,6 +199,13 @@ def run_scan(
                 )
             )
             store.put_artifacts(bundle, ingest_result.commit, result)
+            # SPEC-10 §K: write-through the queryable dataset (a persistent
+            # single-file SQLite keyed by (bundle, commit)) so the org-wide
+            # inventory is a live DB, not a rebuild-on-demand artifact. Idempotent
+            # — a rescan of the same commit replaces its own rows.
+            from aiscan.dataset import upsert_record
+
+            upsert_record(out_root / "inventory.db", result.record.model_dump(mode="json"))
             if not ingest_result.dirty:
                 _write_scan_manifest(
                     store,

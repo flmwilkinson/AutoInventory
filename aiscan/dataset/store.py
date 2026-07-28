@@ -13,7 +13,7 @@ import json
 import sqlite3
 from pathlib import Path
 
-from aiscan.dataset.flatten import Row, flatten
+from aiscan.dataset.flatten import Row, flatten, scan_id_for
 
 _COLUMNS: dict[str, tuple[str, ...]] = {
     "systems": (
@@ -46,6 +46,14 @@ _COLUMNS: dict[str, tuple[str, ...]] = {
         "bundle_id", "scan_id", "finding_id", "kind", "severity",
         "subject_ref", "detail",
     ),
+    "mcp_servers": (
+        "bundle_id", "scan_id", "server_id", "server", "transport",
+        "declared_tools", "approval_policy",
+    ),
+    "model_usages": (
+        "bundle_id", "scan_id", "usage_id", "model_value", "method",
+        "confidence", "task", "endpoint", "in_agent",
+    ),
 }
 
 _KEYS: dict[str, tuple[str, ...]] = {
@@ -54,6 +62,8 @@ _KEYS: dict[str, tuple[str, ...]] = {
     "tools": ("bundle_id", "scan_id", "tool_id"),
     "models": ("bundle_id", "scan_id", "model_key"),
     "findings": ("bundle_id", "scan_id", "finding_id"),
+    "mcp_servers": ("bundle_id", "scan_id", "server_id"),
+    "model_usages": ("bundle_id", "scan_id", "usage_id"),
 }
 
 
@@ -69,10 +79,92 @@ def find_records(root: Path) -> list[Path]:
     return sorted(root.rglob("record.json"))
 
 
+def _ensure_tables(conn: sqlite3.Connection) -> None:
+    for name, columns in _COLUMNS.items():
+        cols = ", ".join(f'"{c}"' for c in columns)
+        pk = ", ".join(f'"{c}"' for c in _KEYS[name])
+        conn.execute(f'CREATE TABLE IF NOT EXISTS "{name}" ({cols}, PRIMARY KEY ({pk}))')
+
+
+def _connect(db_path: Path) -> sqlite3.Connection:
+    """Open (creating) the persistent dataset DB in WAL mode with the schema."""
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(db_path)
+    conn.execute("PRAGMA journal_mode=WAL")
+    conn.execute("PRAGMA busy_timeout=5000")
+    _ensure_tables(conn)
+    return conn
+
+
+def upsert_record(db_path: Path, record: dict[str, object]) -> str:
+    """Write-through one record's rows into the persistent dataset (SPEC-10 §K).
+
+    Idempotent per ``(bundle_id, scan_id)``: this scan's rows are replaced
+    wholesale (a rescan may have fewer entities), so re-scanning a commit
+    converges rather than accumulating duplicates. Returns the scan_id."""
+    if "bundle_id" not in record:
+        raise ValueError("record has no bundle_id")
+    tables = flatten(record)
+    scan_id = scan_id_for(record)
+    bundle_id = record.get("bundle_id")
+    conn = _connect(db_path)
+    try:
+        for name, rows in tables.items():
+            conn.execute(
+                f'DELETE FROM "{name}" WHERE bundle_id=? AND scan_id=?',
+                (bundle_id, scan_id),
+            )
+            columns = _COLUMNS[name]
+            placeholders = ", ".join("?" for _ in columns)
+            conn.executemany(
+                f'INSERT INTO "{name}" VALUES ({placeholders})',
+                [tuple(_cell(row.get(c)) for c in columns) for row in rows],
+            )
+        conn.commit()
+    finally:
+        conn.close()
+    return scan_id
+
+
+def bom_diff(
+    db_path: Path, base_commit: str, head_commit: str
+) -> dict[str, dict[str, list[str]]]:
+    """Per-table entities added/removed between two commits' scans — for PR
+    review. Each commit is resolved to its scan via the systems table."""
+    conn = _connect(db_path)
+    try:
+        def ids(table: str, id_col: str, commit: str) -> set[str]:
+            rows = conn.execute(
+                f'SELECT DISTINCT t."{id_col}" FROM "{table}" t '
+                'JOIN systems s ON t.bundle_id=s.bundle_id AND t.scan_id=s.scan_id '
+                'WHERE s."commit"=?',
+                (commit,),
+            ).fetchall()
+            return {str(r[0]) for r in rows}
+
+        out: dict[str, dict[str, list[str]]] = {}
+        for table, id_col in (
+            ("agents", "agent_id"),
+            ("tools", "tool_id"),
+            ("models", "model_value"),
+            ("mcp_servers", "server_id"),
+        ):
+            base = ids(table, id_col, base_commit)
+            head = ids(table, id_col, head_commit)
+            out[table] = {
+                "added": sorted(head - base),
+                "removed": sorted(base - head),
+            }
+        return out
+    finally:
+        conn.close()
+
+
 def rebuild_dataset(records_root: Path, out_dir: Path) -> int:
     """Rebuild inventory.db + csv/ from every record under ``records_root``.
 
-    Returns the number of system rows (= records ingested)."""
+    A from-records recovery path (the write-through ``upsert_record`` is the
+    steady-state writer). Returns the number of system rows (= records)."""
     tables: dict[str, list[Row]] = {name: [] for name in _COLUMNS}
     for record_path in find_records(records_root):
         record = json.loads(record_path.read_text(encoding="utf-8"))
@@ -90,10 +182,8 @@ def rebuild_dataset(records_root: Path, out_dir: Path) -> int:
         db_path.unlink()
     conn = sqlite3.connect(db_path)
     try:
+        _ensure_tables(conn)
         for name, columns in _COLUMNS.items():
-            cols = ", ".join(f'"{c}"' for c in columns)
-            pk = ", ".join(f'"{c}"' for c in _KEYS[name])
-            conn.execute(f'CREATE TABLE "{name}" ({cols}, PRIMARY KEY ({pk}))')
             placeholders = ", ".join("?" for _ in columns)
             conn.executemany(
                 f'INSERT OR REPLACE INTO "{name}" VALUES ({placeholders})',

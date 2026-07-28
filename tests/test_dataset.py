@@ -74,3 +74,54 @@ class TestQueries:
         rows = run_query(dataset / "inventory.db", "high_findings")
         kinds = {r[1] for r in rows}
         assert "high_privilege_agent" in kinds
+
+
+class TestWriteThrough:
+    """SPEC-10 §K: the persistent, idempotent write-through path."""
+
+    def _load(self, records_root: Path, name: str) -> dict[str, object]:
+        import json
+
+        path = next((records_root / name).rglob("record.json"))
+        return json.loads(path.read_text(encoding="utf-8"))  # type: ignore[no-any-return]
+
+    def test_upsert_idempotent_and_distinct(
+        self, records_root: Path, tmp_path: Path
+    ) -> None:
+        from aiscan.dataset.store import dump_tables, upsert_record
+
+        db = tmp_path / "wt.db"
+        a = self._load(records_root, "bespoke_llm_call_only")
+        b = self._load(records_root, "derived_indicators")
+        sid1 = upsert_record(db, a)
+        sid2 = upsert_record(db, a)  # same content -> same scan_id -> replaced
+        assert sid1 == sid2
+        assert len(dump_tables(db)["systems"]) == 1  # idempotent, not duplicated
+        upsert_record(db, b)
+        assert len(dump_tables(db)["systems"]) == 2  # distinct records both kept
+
+    def test_new_tables_present_and_populated(self, dataset: Path) -> None:
+        tables = dump_tables(dataset / "inventory.db")
+        assert "mcp_servers" in tables and "model_usages" in tables
+        # bespoke_llm_call_only issues a bare LLM call -> at least one usage row.
+        assert len(tables["model_usages"]) >= 1
+
+    def test_bom_diff_reports_removed_agent(
+        self, records_root: Path, tmp_path: Path
+    ) -> None:
+        import copy
+
+        from aiscan.dataset.store import bom_diff, upsert_record
+
+        db = tmp_path / "diff.db"
+        rec = self._load(records_root, "derived_indicators")
+        assert rec.get("agents"), "fixture should have agents to remove"
+        base = copy.deepcopy(rec)
+        base["scanned_commit"] = "aaaaaaaa"
+        head = copy.deepcopy(rec)
+        head["scanned_commit"] = "bbbbbbbb"
+        removed = head["agents"].pop(0)["agent_id"]  # type: ignore[index]
+        upsert_record(db, base)
+        upsert_record(db, head)
+        diff = bom_diff(db, "aaaaaaaa", "bbbbbbbb")
+        assert removed in diff["agents"]["removed"]

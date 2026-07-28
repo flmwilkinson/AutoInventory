@@ -8,9 +8,13 @@ fields flatten to null). Complex cells are canonical-JSON-encoded strings.
 
 from __future__ import annotations
 
+import copy
 import hashlib
 import json
 from typing import Any
+
+from aiscan.graph.canonical import canonical_json
+from aiscan.inventory.identity import identity_record
 
 Row = dict[str, object]
 
@@ -32,9 +36,16 @@ def _j(value: object) -> str | None:
 
 
 def scan_id_for(record: dict[str, Any]) -> str:
-    prov = record.get("inventory_provenance") or {}
-    basis = f"{record.get('bundle_id')}|{record.get('scanned_commit')}|{prov.get('scanned_at')}"
-    return hashlib.sha256(basis.encode("utf-8")).hexdigest()[:16]
+    """Stable content identity of a scan (SPEC-10 §K).
+
+    The same ``(bundle, commit)`` rescanned yields the same id — so a
+    write-through upsert idempotently replaces its own rows — while a materially
+    different scan differs. Wall-clock fields are excluded via ``identity_record``
+    (so a rescan of one commit is byte-stable), but the full *deterministic*
+    content is hashed, so distinct scans that happen to share ``(bundle, commit)``
+    — e.g. synthetic ``repo:repo|unversioned`` fixtures — stay distinct."""
+    projection = identity_record(copy.deepcopy(record))
+    return hashlib.sha256(canonical_json(projection).encode("utf-8")).hexdigest()[:16]
 
 
 def _derived(record: dict[str, Any], field: str) -> object:
@@ -202,10 +213,43 @@ def flatten(record: dict[str, Any]) -> dict[str, list[Row]]:
             }
         )
 
+    mcp_servers: list[Row] = []
+    for mcp in record.get("mcp_servers") or []:
+        mcp_servers.append(
+            {
+                **key,
+                "server_id": mcp.get("server_id"),
+                "server": _j(mcp.get("server")),
+                "transport": mcp.get("transport"),
+                "declared_tools": _j(mcp.get("declared_tools")),
+                "approval_policy": mcp.get("approval_policy"),
+            }
+        )
+
+    model_usages: list[Row] = []
+    for usage in record.get("model_usages") or []:
+        m = usage.get("model") or {}
+        # Evidence is a stable, order-independent identity for a call site.
+        ev = json.dumps(usage.get("evidence"), sort_keys=True)
+        model_usages.append(
+            {
+                **key,
+                "usage_id": hashlib.sha256(ev.encode("utf-8")).hexdigest()[:12],
+                "model_value": _j(m.get("value")),
+                "method": m.get("method"),
+                "confidence": m.get("confidence"),
+                "task": usage.get("task"),
+                "endpoint": _j(usage.get("endpoint")),
+                "in_agent": usage.get("in_agent"),
+            }
+        )
+
     return {
         "systems": systems,
         "agents": agents,
         "tools": tools,
         "models": models,
         "findings": findings,
+        "mcp_servers": mcp_servers,
+        "model_usages": model_usages,
     }
