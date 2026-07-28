@@ -14,6 +14,11 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING, Protocol
 
+from aiscan.frontends.bespoke.wrappers import (
+    WrapperInfo,
+    load_registry,
+    save_registry,
+)
 from aiscan.incremental.factcache import CachedAnalysis, load_cached_analysis
 from aiscan.incremental.manifest import (
     Manifest,
@@ -41,6 +46,10 @@ class StateStore(Protocol):
     def get_prior_facts(self, bundle: str, commit: str) -> CachedAnalysis | None: ...
     def location(self, bundle: str, commit: str) -> Path: ...
     def put_artifacts(self, bundle: str, commit: str, result: ScanResult) -> Path: ...
+    # ORG-scoped (shared across all repos in the org), not (repo, commit)-keyed:
+    # the derived wrapper classifications a full scan learns and later scans read.
+    def get_org_registry(self) -> dict[str, WrapperInfo]: ...
+    def put_org_registry(self, infos: dict[str, WrapperInfo]) -> None: ...
 
 
 class LocalDirStore:
@@ -48,12 +57,22 @@ class LocalDirStore:
     and each scan's artifacts under ``<out>/<bundle>-<commit8>/`` — exactly the
     layout the CLI produced before the seam existed."""
 
-    def __init__(self, out_root: Path) -> None:
+    def __init__(self, out_root: Path, org_registry_path: Path | None = None) -> None:
         self.out_root = out_root
         self._cache_dir = out_root / "_cache"
+        # The org registry is ORG-scoped, NOT per-repo: in fleet mode every repo
+        # has its own out_root but shares one registry at the fleet root. The
+        # caller passes that shared path; default to this out_root standalone.
+        self._org_registry = org_registry_path or (out_root / "org_registry.json")
 
     def location(self, bundle: str, commit: str) -> Path:
         return self.out_root / f"{bundle}-{commit_tag(commit)}"
+
+    def get_org_registry(self) -> dict[str, WrapperInfo]:
+        return load_registry(self._org_registry)
+
+    def put_org_registry(self, infos: dict[str, WrapperInfo]) -> None:
+        save_registry(self._org_registry, infos)
 
     def get_manifest(self, bundle: str) -> Manifest | None:
         return read_manifest(manifest_path(self._cache_dir, bundle))

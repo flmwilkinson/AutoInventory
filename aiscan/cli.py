@@ -130,7 +130,9 @@ def run_scan(
 
     # SPEC-10 §3: state (manifest, prior facts, artifacts) is addressed through a
     # store keyed by (bundle, commit) — LocalDirStore reproduces today's layout.
-    store = LocalDirStore(out_root)
+    # The org registry is org-scoped: pass the (possibly shared, e.g. fleet-root)
+    # path so per-repo out dirs still share one registry (SPEC-10 §J).
+    store = LocalDirStore(out_root, settings.org_registry_path)
     # SPEC-10 §2: the source is fetched through a provider. A URL is cloned
     # ephemerally into a temp dir that is removed when the `with` block exits —
     # there is no persistent `_clones/` cache; a local dir is scanned in place.

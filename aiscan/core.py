@@ -410,7 +410,14 @@ def scan(request: ScanRequest) -> ScanResult:
     ctx.health.stage_ms["sinks"] = int((time.monotonic() - t2) * 1000)
 
     t3 = time.monotonic()
-    registry = load_registry(ctx.settings.org_registry_path)
+    # SPEC-10 §J: the org wrapper registry is cross-scan state addressed through
+    # the store at ORG scope (a service can back it with a DB), falling back to
+    # the settings path for direct callers that pass no store.
+    registry = (
+        request.store.get_org_registry()
+        if request.store is not None
+        else load_registry(ctx.settings.org_registry_path)
+    )
     analyzer = WrapperAnalyzer(
         resolver, sink_engine, ctx.org_pack, registry, analyze_only=analyze_only
     )
@@ -422,14 +429,17 @@ def scan(request: ScanRequest) -> ScanResult:
     # Full scans own the wrapper registry; an incremental scan sees only the
     # affected wrappers, so it must not overwrite the full classification set
     # (which the affected modules' attribution reads from).
-    if ctx.settings.org_registry_path is not None and plan is None:
+    if plan is None:
         persisted = {
             fq: info
             for fq, info in wrapper_result.classified.items()
             if fq in wrapper_result.used_wrappers and info.source in ("derived", "registry")
         }
         if persisted:
-            save_registry(ctx.settings.org_registry_path, persisted)
+            if request.store is not None:
+                request.store.put_org_registry(persisted)
+            elif ctx.settings.org_registry_path is not None:
+                save_registry(ctx.settings.org_registry_path, persisted)
     all_sink_spans = frozenset(s.span for s in all_sinks)
 
     packs = load_packs()
