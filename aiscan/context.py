@@ -46,6 +46,12 @@ class Settings(BaseModel):
     adjudicate_base_url: str | None = None
     adjudicate_model: str | None = None
     adjudicate_budget: int = 20
+    # SPEC-10 §L: per-repo scaling guard. A repo over either ceiling emits a
+    # bounded record flagged in scan_health rather than risking an OOM that would
+    # take down a whole org-wide batch. Generous defaults — a normal repo (even a
+    # 300k-LOC monorepo) never trips them; only a pathological tree does.
+    max_files: int = 100_000
+    max_loc: int = 10_000_000
 
     @classmethod
     def load(cls, yaml_path: Path | None = None) -> Settings:
@@ -72,6 +78,10 @@ class Settings(BaseModel):
         if "AISCAN_ADJUDICATE_BUDGET" in env:
             with contextlib.suppress(ValueError):
                 data["adjudicate_budget"] = int(env["AISCAN_ADJUDICATE_BUDGET"])
+        for var, setting in (("AISCAN_MAX_FILES", "max_files"), ("AISCAN_MAX_LOC", "max_loc")):
+            if var in env:
+                with contextlib.suppress(ValueError):
+                    data[setting] = int(env[var])
         return cls.model_validate(data)
 
 
@@ -138,6 +148,10 @@ class ScanHealth(BaseModel):
     unpromoted_candidates: int = 0
     findings: int = 0
     stage_ms: dict[str, int] = Field(default_factory=dict)
+    # SPEC-10 §L: set (with the ceilings + actual counts) when a repo exceeds the
+    # size budget and only triage-level analysis was run — a visible flag so a
+    # bounded record is never mistaken for a complete one.
+    size_budget: dict[str, int] | None = None
     # SPEC-2 §4.4 note; None until --enrich. On a run it carries a `status`
     # ("ok" | "unavailable" | "skipped") + counts or a reason, so a null
     # summary is explained rather than silent.

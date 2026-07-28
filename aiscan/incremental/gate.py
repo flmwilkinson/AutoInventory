@@ -18,7 +18,7 @@ from aiscan.incremental.manifest import Manifest, hash_files
 # derive. A mismatch invalidates every cache and forces full scans until the
 # next successful full scan re-seeds the manifest. (Precedent: the
 # org_registry.json schema int, DECISIONS Z6.)
-ANALYSIS_VERSION = 1
+ANALYSIS_VERSION = 2
 
 # Files whose content changes the resolution of *every* module — dependency
 # versions and TS path aliases. A diff touching any of these escalates to full.

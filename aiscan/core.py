@@ -87,6 +87,45 @@ def _discover(repo_root: Path, exts: tuple[str, ...]) -> list[str]:
     return sorted(found)
 
 
+def _over_budget(
+    settings: Settings, *, files: int, loc: int
+) -> dict[str, int] | None:
+    """A scan-health payload when a repo exceeds the size budget, else None.
+    The presence of the payload is the flag; the consumer compares files/loc
+    against the ceilings to see which was breached (SPEC-10 §L)."""
+    if (settings.max_files and files > settings.max_files) or (
+        settings.max_loc and loc > settings.max_loc
+    ):
+        return {
+            "files": files,
+            "loc": loc,
+            "max_files": settings.max_files,
+            "max_loc": settings.max_loc,
+        }
+    return None
+
+
+def _bounded_result(
+    ctx: ScanContext, owner_hint: str | None, over: dict[str, int]
+) -> ScanResult:
+    """A size-budget-exceeded outcome: a triage-level record, loudly flagged in
+    scan_health, instead of an OOM. Honest incompleteness beats a lost batch
+    (SPEC-10 §L). The bounded record still carries triage/dependency signals."""
+    ctx.logger.warning(
+        "size budget exceeded (files=%d loc=%d; caps %d/%d) — emitting a bounded, "
+        "flagged record without deep analysis",
+        over["files"],
+        over["loc"],
+        over["max_files"],
+        over["max_loc"],
+    )
+    ctx.health.size_budget = over
+    versions = {p.framework: p.version for p in load_packs()}
+    record = build_record(ctx, versions, owner_hint=owner_hint)
+    record = derive_record(record, ctx.org_pack, load_host_registry(ctx.org_pack))
+    return ScanResult(record=record, graph=Graph(), fact_lines=[])
+
+
 @dataclass(slots=True)
 class ScanRequest:
     """Everything the core needs to scan a materialised source tree.
@@ -295,8 +334,13 @@ def scan(request: ScanRequest) -> ScanResult:
         return ScanResult(record=record, graph=Graph(), fact_lines=[])
 
     t0 = time.monotonic()
+    source_files = discover_source_files(ctx.repo_root)
+    # SPEC-10 §L: a pathological file count trips the guard before we even parse.
+    over = _over_budget(ctx.settings, files=len(source_files), loc=0)
+    if over is not None:
+        return _bounded_result(ctx, owner_hint, over)
     modules_by_path = {}
-    for rel_path in discover_source_files(ctx.repo_root):
+    for rel_path in source_files:
         ext = "." + rel_path.rsplit(".", 1)[-1].lower()
         parser = make_parser(ext, on_secret=ctx.secret_findings.append)
         if parser is None:
@@ -317,6 +361,12 @@ def scan(request: ScanRequest) -> ScanResult:
             ctx.health.loc += result.loc
         ctx.health.files += 1
     ctx.health.stage_ms["parse"] = int((time.monotonic() - t0) * 1000)
+
+    # SPEC-10 §L: LOC is only known post-parse — guard the expensive whole-program
+    # resolution/frontends (the real memory sink) before starting them.
+    over = _over_budget(ctx.settings, files=ctx.health.files, loc=ctx.health.loc)
+    if over is not None:
+        return _bounded_result(ctx, owner_hint, over)
 
     t1 = time.monotonic()
     versions = read_package_versions(ctx.repo_root)

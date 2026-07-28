@@ -322,12 +322,18 @@ class InventoryProvenance(BaseModel):
     detection_basis: Literal["static/declared"] = "static/declared"
 
 
+SCHEMA_VERSION = "1.0"
+"""record.json schema version (SPEC-10 §G). Bump on any breaking change to the
+record shape so a downstream consumer / stored dataset can gate on it."""
+
+
 class Record(BaseModel):
     """The bundle-level inventory record (SPEC-1 Appendix A + [E] summaries)."""
 
     model_config = ConfigDict(frozen=True)
 
     bundle_id: str
+    schema_version: str = SCHEMA_VERSION
     name: str
     repo_url: str | None = None
     scanned_commit: str = "unknown"

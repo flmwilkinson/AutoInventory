@@ -421,6 +421,13 @@ def write_record_artifacts(out_dir: Path, record: Record) -> None:
         encoding="utf-8",
     )
 
+    # SPEC-10 §G: emit the record's JSON schema so each scan output is
+    # self-describing and record.json is a versioned API contract.
+    (out_dir / "record.schema.json").write_text(
+        canonical_json(record.model_json_schema()),
+        encoding="utf-8",
+    )
+
     (out_dir / "scan_health.json").write_text(
         canonical_json(
             record.scan_health.model_dump(mode="json")

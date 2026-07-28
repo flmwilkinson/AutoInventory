@@ -60,6 +60,26 @@ def test_core_scan_is_pure_wrt_request(monkeypatch: pytest.MonkeyPatch) -> None:
     assert result.record.agents
 
 
+def test_size_budget_emits_bounded_flagged_record() -> None:
+    # SPEC-10 §L: an over-budget repo degrades to a flagged, triage-level record
+    # instead of OOMing — and the flag makes the incompleteness visible.
+    result = scan(
+        ScanRequest(
+            repo_root=fixture_repo("fw_openai_agents_basic"),
+            repo_url=None,
+            commit="unversioned",
+            bundle_name="repo",
+            settings=Settings(max_loc=1),  # trip the guard right after parse
+            org_pack=OrgPack(),
+            logger=logging.getLogger("test-core"),
+        )
+    )
+    over = result.record.scan_health.size_budget
+    assert over is not None and over["loc"] > 1
+    assert not result.record.agents  # deep analysis was skipped
+    assert result.fact_lines == []
+
+
 def test_per_scan_loggers_are_isolated() -> None:
     # SPEC-10 §4: two scans must not share a logger — else concurrent scans in
     # one process would rip out each other's handlers / cross-write scan.log.

@@ -366,6 +366,7 @@
       "top": {}
     },
     "sinks": {},
+    "size_budget": null,
     "stage_ms": {},
     "triage": {
       "manifest_ai_package": [
@@ -376,6 +377,7 @@
     "wrapper_classifications": 0
   },
   "scanned_commit": "unversioned",
+  "schema_version": "1.0",
   "suggested_aia_risk_category": {
     "confirmed_by": null,
     "insufficient_evidence": null,
