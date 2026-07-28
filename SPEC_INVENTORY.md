@@ -134,15 +134,28 @@ Ordered; each is `S`/`M`. Record-shape changes re-bless the goldens once (intent
   ≠ the *def* site, so it can regress true positives; adopt only after a recall check.
 - Full multi-model de-truncation.
 
-## Audit trail (separate, still wanted)
+## Audit trail (BUILT — local, free, no storage purchase)
 
-The who/when/what-changed audit trail (from the earlier conversation) is a distinct concern — scan
-*provenance* + change history, not inventory *content*. It reuses SPEC-10's building blocks:
-- **who/when** — capture `actor` + `trigger` on `ScanRequest`; append a `scans` event-log row per scan.
-- **what-changed** — `bom_diff(base, head)` per default-branch scan (already built).
+The who/when/what-changed audit trail is scan *provenance* + change history, not inventory *content*,
+so it lives beside the matrix in the same `inventory.db` and never touches the deterministic record:
+- **who/when/why** — `--actor` / `--trigger` on the CLI + `run_scan`; a `scans` event-log row per
+  scanned `(bundle, commit)`.
+- **tamper-evident ledger** — a `audit_log` table: append-only, **hash-chained** (each row links the
+  prior row's `entry_hash`), one row per scan RUN. `aiscan --verify-audit` walks the chain and reports
+  any break — cryptographic tamper-EVIDENCE, entirely local (tamper-PREVENTION additionally needs
+  OS/WORM controls, e.g. `chattr +i` — free — or a WORM store, only if wanted).
+- **what-changed** — `bom_diff(base, head)` between commits (built).
+- **governance overlay + reconciliation** — a `governance` table (owner/risk/approval/lifecycle) with
+  its own `governance_audit` change-log; `aiscan --govern <bundle> [--owner/--risk/--approve]` records
+  an audited decision, kept SEPARATE from detected evidence (never overwrites it). `aiscan --unattested`
+  is the killer query: **detected AI systems not approved in the register = the shadow-AI report.**
 - **immutable evidence** — per-`(repo, commit)` record.json/HTML kept, idempotent via the content
-  `scan_id` (already built); tamper-evident via the `identity_record` hash.
+  `scan_id`; tamper-evident via the `identity_record` hash.
 - **default-branch = the inventory; PR = the gate** — the estate reflects merged reality, not drafts.
+
+Everything above runs on a laptop / internal box with SQLite + files — no cloud, no purchase. Cloud only
+enters for always-on multi-user service, org-scale concurrency (free self-hosted Postgres), or
+storage-enforced immutability — all optional and deferrable.
 
 ## Governance framing (why this shape)
 

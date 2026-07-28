@@ -220,22 +220,30 @@ def run_scan(
             # single-file SQLite keyed by (bundle, commit)) so the org-wide
             # inventory is a live DB, not a rebuild-on-demand artifact. Idempotent
             # — a rescan of the same commit replaces its own rows.
-            from aiscan.dataset import append_scan_event, upsert_record
+            from aiscan.dataset import (
+                append_audit_entry,
+                append_scan_event,
+                upsert_record,
+            )
 
             inventory_db = out_root / "inventory.db"
             scan_id = upsert_record(inventory_db, result.record.model_dump(mode="json"))
-            # SPEC_INVENTORY audit spine: log who/when/why in the event-log (not
-            # the deterministic record). "what changed" = bom_diff across commits.
+            # SPEC_INVENTORY audit spine: log who/when/why. append_scan_event is
+            # the per-commit estate index; append_audit_entry is the per-run,
+            # append-only, hash-chained tamper-evident ledger. Both are scan
+            # provenance — never written to the deterministic record.
+            bundle_id = result.record.bundle_id
+            scanned_at = result.record.inventory_provenance.scanned_at
+            commit_ = ingest_result.commit
             append_scan_event(
-                inventory_db,
-                scan_id=scan_id,
-                bundle_id=result.record.bundle_id,
-                commit=ingest_result.commit,
-                base_commit=base,
-                scanned_at=result.record.inventory_provenance.scanned_at,
-                actor=actor,
-                trigger=trigger,
-                scanner_ver=scanner_version,
+                inventory_db, scan_id=scan_id, bundle_id=bundle_id, commit=commit_,
+                base_commit=base, scanned_at=scanned_at, actor=actor,
+                trigger=trigger, scanner_ver=scanner_version,
+            )
+            append_audit_entry(
+                inventory_db, scan_id=scan_id, bundle_id=bundle_id, commit=commit_,
+                base_commit=base, scanned_at=scanned_at, actor=actor,
+                trigger=trigger, scanner_ver=scanner_version,
             )
             if not ingest_result.dirty:
                 _write_scan_manifest(
@@ -434,6 +442,35 @@ def scan(
             "path per line, # comments) into one dataset + estate index.html",
         ),
     ] = None,
+    verify_audit: Annotated[
+        bool,
+        typer.Option(
+            "--verify-audit",
+            help="Verify the tamper-evident audit ledger in --out (default "
+            "aiscan-out), report any break, then exit",
+        ),
+    ] = False,
+    unattested: Annotated[
+        bool,
+        typer.Option(
+            "--unattested",
+            help="List detected AI systems NOT approved in the governance register "
+            "(the shadow-AI / un-attested report) from --out, then exit",
+        ),
+    ] = False,
+    govern: Annotated[
+        str | None,
+        typer.Option(
+            "--govern",
+            help="Record a governance decision for this bundle_id in --out "
+            "(with --owner/--risk/--approve), audited, then exit",
+        ),
+    ] = None,
+    owner: Annotated[str | None, typer.Option("--owner", help="Owner, for --govern")] = None,
+    risk: Annotated[str | None, typer.Option("--risk", help="Risk tier, for --govern")] = None,
+    approve: Annotated[
+        bool, typer.Option("--approve", help="Mark the --govern system approved")
+    ] = False,
 ) -> None:
     """Statically scan a repository for AI/agent usage and emit inventory artifacts.
 
@@ -447,6 +484,45 @@ def scan(
         count = _rebuild(rebuild_dataset, rebuild_dataset)
         typer.echo(f"dataset rebuilt from {count} records -> {rebuild_dataset / 'inventory.db'}")
         return
+    if verify_audit or unattested or govern is not None:
+        inventory_db = (out or Settings.load().out_dir).resolve() / "inventory.db"
+        if verify_audit:
+            from aiscan.dataset import verify_audit_log
+
+            res = verify_audit_log(inventory_db)
+            status = "OK" if res["ok"] else f"TAMPERED at seq {res['first_bad_seq']}"
+            typer.echo(
+                f"audit ledger: {res['entries']} entries — {status} "
+                f"(tip {str(res['tip_hash'])[:16]})"
+            )
+            raise typer.Exit(0 if res["ok"] else 1)
+        if unattested:
+            from aiscan.dataset import unattested_systems
+
+            rows = unattested_systems(inventory_db)
+            if not rows:
+                typer.echo("all detected AI systems are attested in the governance register")
+            else:
+                typer.echo(f"un-attested AI systems ({len(rows)}):")
+                for bundle_id, verdict, appr in rows:
+                    typer.echo(f"  {bundle_id}  [{verdict}]  approval={appr or 'none'}")
+            raise typer.Exit(1 if rows else 0)
+        if govern is not None:
+            import datetime
+
+            from aiscan.dataset import set_governance
+
+            set_governance(
+                inventory_db,
+                govern,
+                owner=owner,
+                risk_tier=risk,
+                approval_status="approved" if approve else None,
+                actor=actor or _default_actor(),
+                at=datetime.datetime.now(datetime.UTC).isoformat(),
+            )
+            typer.echo(f"governance recorded for {govern}")
+            return
     if repos is not None:
         from aiscan.fleet import run_fleet
 

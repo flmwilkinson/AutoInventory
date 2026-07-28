@@ -106,6 +106,61 @@ class TestWriteThrough:
         # bespoke_llm_call_only issues a bare LLM call -> at least one usage row.
         assert len(tables["model_usages"]) >= 1
 
+    def test_audit_ledger_is_tamper_evident(self, tmp_path: Path) -> None:
+        # SPEC_INVENTORY: the append-only hash-chained ledger detects any edit
+        # or mid-chain deletion of history.
+        import sqlite3
+
+        from aiscan.dataset.store import append_audit_entry, verify_audit_log
+
+        db = tmp_path / "inv.db"
+        common = dict(
+            bundle_id="repo:x", commit="c", base_commit=None, scanned_at="t",
+            actor="a", trigger="manual", scanner_ver="v",
+        )
+        append_audit_entry(db, scan_id="s1", **common)  # type: ignore[arg-type]
+        append_audit_entry(db, scan_id="s2", **common)  # type: ignore[arg-type]
+        assert verify_audit_log(db)["ok"] is True
+        con = sqlite3.connect(db)
+        con.execute("UPDATE audit_log SET actor='mallory' WHERE seq=1")
+        con.commit()
+        con.close()
+        res = verify_audit_log(db)
+        assert res["ok"] is False and res["first_bad_seq"] == 1
+
+    def test_governance_reconciliation_and_audit(
+        self, records_root: Path, tmp_path: Path
+    ) -> None:
+        # SPEC_INVENTORY: detected-vs-approved reconciliation (the shadow-AI
+        # report), with every governance decision audited.
+        import sqlite3
+
+        from aiscan.dataset.store import (
+            set_governance,
+            unattested_systems,
+            upsert_record,
+        )
+
+        db = tmp_path / "inv.db"
+        rec = self._load(records_root, "derived_indicators")
+        upsert_record(db, rec)
+        assert [b for b, _, _ in unattested_systems(db)] == [rec["bundle_id"]]
+
+        set_governance(
+            db, str(rec["bundle_id"]), approval_status="approved", owner="jane",
+            actor="ciso", at="2026-01-01",
+        )
+        assert unattested_systems(db) == []  # now attested
+        con = sqlite3.connect(db)
+        try:
+            aud = con.execute(
+                "SELECT field, new_value, actor FROM governance_audit ORDER BY seq"
+            ).fetchall()
+        finally:
+            con.close()
+        assert ("approval_status", "approved", "ciso") in aud
+        assert ("owner", "jane", "ciso") in aud
+
     def test_audit_event_log_captures_who_why(self, tmp_path: Path) -> None:
         # SPEC_INVENTORY audit spine: who/when/why land in the scans event-log,
         # NOT in the deterministic record.

@@ -9,11 +9,19 @@ content and byte-identical CSVs.
 from __future__ import annotations
 
 import csv
+import hashlib
 import json
 import sqlite3
 from pathlib import Path
 
 from aiscan.dataset.flatten import Row, flatten, scan_id_for
+
+# SPEC_INVENTORY audit vault: genesis link of the hash chain.
+_GENESIS = "0" * 64
+_AUDIT_FIELDS = (
+    "scan_id", "bundle_id", "commit", "base_commit",
+    "scanned_at", "actor", "trigger", "scanner_ver",
+)
 
 _COLUMNS: dict[str, tuple[str, ...]] = {
     "systems": (
@@ -99,6 +107,27 @@ def _ensure_tables(conn: sqlite3.Connection) -> None:
         conn.execute(f'CREATE TABLE IF NOT EXISTS "{name}" ({cols}, PRIMARY KEY ({pk}))')
 
 
+def _ensure_audit_tables(conn: sqlite3.Connection) -> None:
+    # SPEC_INVENTORY: the tamper-evident audit LEDGER (append-only, hash-chained,
+    # one row per scan RUN) and the governance overlay + its own change-audit.
+    conn.execute(
+        'CREATE TABLE IF NOT EXISTS "audit_log" (seq INTEGER PRIMARY KEY, '
+        'scan_id TEXT, bundle_id TEXT, "commit" TEXT, base_commit TEXT, '
+        "scanned_at TEXT, actor TEXT, trigger TEXT, scanner_ver TEXT, "
+        "prev_hash TEXT, entry_hash TEXT)"
+    )
+    conn.execute(
+        'CREATE TABLE IF NOT EXISTS "governance" (bundle_id TEXT PRIMARY KEY, '
+        "owner TEXT, risk_tier TEXT, approval_status TEXT, lifecycle TEXT, "
+        "updated_by TEXT, updated_at TEXT)"
+    )
+    conn.execute(
+        'CREATE TABLE IF NOT EXISTS "governance_audit" (seq INTEGER PRIMARY KEY, '
+        "bundle_id TEXT, field TEXT, old_value TEXT, new_value TEXT, "
+        "actor TEXT, at TEXT)"
+    )
+
+
 def _connect(db_path: Path) -> sqlite3.Connection:
     """Open (creating) the persistent dataset DB in WAL mode with the schema."""
     db_path.parent.mkdir(parents=True, exist_ok=True)
@@ -106,6 +135,7 @@ def _connect(db_path: Path) -> sqlite3.Connection:
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA busy_timeout=5000")
     _ensure_tables(conn)
+    _ensure_audit_tables(conn)
     return conn
 
 
@@ -168,6 +198,150 @@ def append_scan_event(
         conn.commit()
     finally:
         conn.close()
+
+
+def _entry_hash(seq: int, values: tuple[object, ...], prev_hash: str) -> str:
+    basis = "|".join(str(v) for v in (seq, *values, prev_hash))
+    return hashlib.sha256(basis.encode("utf-8")).hexdigest()
+
+
+def append_audit_entry(
+    db_path: Path,
+    *,
+    scan_id: str,
+    bundle_id: str | None,
+    commit: str,
+    base_commit: str | None,
+    scanned_at: str | None,
+    actor: str | None,
+    trigger: str,
+    scanner_ver: str | None,
+) -> str:
+    """Append ONE scan run to the tamper-evident audit ledger and return the new
+    tip hash (SPEC_INVENTORY audit vault).
+
+    Append-only + hash-chained: each row links to the prior row's ``entry_hash``,
+    so any later edit or mid-chain deletion breaks the chain and ``verify_audit_log``
+    catches it — cryptographic tamper-EVIDENCE, entirely local, no storage
+    product required. (Tamper-PREVENTION additionally needs OS/WORM controls.)
+    One row per RUN, so re-scanning a commit is a distinct, logged event."""
+    values = (scan_id, bundle_id, commit, base_commit, scanned_at, actor, trigger, scanner_ver)
+    conn = _connect(db_path)
+    try:
+        tip = conn.execute(
+            "SELECT seq, entry_hash FROM audit_log ORDER BY seq DESC LIMIT 1"
+        ).fetchone()
+        seq = (tip[0] + 1) if tip else 1
+        prev_hash = tip[1] if tip else _GENESIS
+        entry_hash = _entry_hash(seq, values, prev_hash)
+        conn.execute(
+            'INSERT INTO "audit_log" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            (seq, *values, prev_hash, entry_hash),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+    return entry_hash
+
+
+def verify_audit_log(db_path: Path) -> dict[str, object]:
+    """Walk the ledger and check every link. Returns ``{ok, entries, tip_hash,
+    first_bad_seq}``. A break means a historical row was edited or deleted.
+
+    Detects edits and mid-chain deletions. Tail-truncation (deleting the newest
+    rows) is not chain-detectable alone — compare ``tip_hash`` against an external
+    record (e.g. a prior verify's output) to catch it."""
+    conn = _connect(db_path)
+    try:
+        rows = conn.execute(
+            "SELECT seq, scan_id, bundle_id, \"commit\", base_commit, scanned_at, "
+            "actor, trigger, scanner_ver, prev_hash, entry_hash FROM audit_log ORDER BY seq"
+        ).fetchall()
+    finally:
+        conn.close()
+    expected_prev = _GENESIS
+    expected_seq = 1
+    for r in rows:
+        seq, *values, prev_hash, entry_hash = r
+        recomputed = _entry_hash(seq, tuple(values), prev_hash)
+        if seq != expected_seq or prev_hash != expected_prev or recomputed != entry_hash:
+            return {
+                "ok": False,
+                "entries": len(rows),
+                "tip_hash": expected_prev,
+                "first_bad_seq": seq,
+            }
+        expected_prev = entry_hash
+        expected_seq += 1
+    return {"ok": True, "entries": len(rows), "tip_hash": expected_prev, "first_bad_seq": None}
+
+
+def set_governance(
+    db_path: Path,
+    bundle_id: str,
+    *,
+    owner: str | None = None,
+    risk_tier: str | None = None,
+    approval_status: str | None = None,
+    lifecycle: str | None = None,
+    actor: str | None = None,
+    at: str | None = None,
+) -> None:
+    """Record a governance decision for a system, auditing every changed field
+    (SPEC_INVENTORY). Only the fields passed are updated; the rest are preserved.
+    The decision is human, separate from the detected evidence — never overwrites it."""
+    fields = ("owner", "risk_tier", "approval_status", "lifecycle")
+    new = {
+        "owner": owner,
+        "risk_tier": risk_tier,
+        "approval_status": approval_status,
+        "lifecycle": lifecycle,
+    }
+    conn = _connect(db_path)
+    try:
+        cur = conn.execute(
+            "SELECT owner, risk_tier, approval_status, lifecycle FROM governance WHERE bundle_id=?",
+            (bundle_id,),
+        ).fetchone()
+        old = dict(zip(fields, cur, strict=True)) if cur else {f: None for f in fields}
+        gseq = (conn.execute("SELECT max(seq) FROM governance_audit").fetchone()[0] or 0)
+        for f in fields:
+            if new[f] is not None and new[f] != old[f]:
+                gseq += 1
+                conn.execute(
+                    'INSERT INTO "governance_audit" VALUES (?, ?, ?, ?, ?, ?, ?)',
+                    (gseq, bundle_id, f, old[f], new[f], actor, at),
+                )
+        merged = {f: (new[f] if new[f] is not None else old[f]) for f in fields}
+        conn.execute(
+            'INSERT OR REPLACE INTO "governance" '
+            "(bundle_id, owner, risk_tier, approval_status, lifecycle, updated_by, updated_at) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (bundle_id, merged["owner"], merged["risk_tier"],
+             merged["approval_status"], merged["lifecycle"], actor, at),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def unattested_systems(db_path: Path) -> list[tuple[str, str, str | None]]:
+    """The shadow-AI / un-attested report: detected AI systems NOT approved in the
+    governance register (SPEC_INVENTORY reconciliation). Liveness-agnostic and
+    prominent — a bank must reconcile every detected AI system against the approved
+    register, regardless of how live it is. Returns (bundle_id, verdict, status)."""
+    conn = _connect(db_path)
+    try:
+        rows = conn.execute(
+            "SELECT DISTINCT s.bundle_id, s.ai_verdict, g.approval_status "
+            'FROM systems s LEFT JOIN governance g ON s.bundle_id = g.bundle_id '
+            "WHERE s.ai_verdict IN ('ai_detected', 'ai_signals_only') "
+            "AND (g.approval_status IS NULL OR g.approval_status != 'approved') "
+            "ORDER BY s.bundle_id"
+        ).fetchall()
+    finally:
+        conn.close()
+    return [(r[0], r[1], r[2]) for r in rows]
 
 
 def bom_diff(
