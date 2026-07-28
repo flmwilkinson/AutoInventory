@@ -106,6 +106,29 @@ class TestWriteThrough:
         # bespoke_llm_call_only issues a bare LLM call -> at least one usage row.
         assert len(tables["model_usages"]) >= 1
 
+    def test_audit_event_log_captures_who_why(self, tmp_path: Path) -> None:
+        # SPEC_INVENTORY audit spine: who/when/why land in the scans event-log,
+        # NOT in the deterministic record.
+        import json
+        import sqlite3
+
+        from aiscan.cli import run_scan
+        from tests.conftest import fixture_repo
+
+        out = tmp_path / "estate"
+        d = run_scan(
+            str(fixture_repo("fw_openai_agents_basic")), out=out, actor="alice", trigger="pr"
+        )
+        con = sqlite3.connect(out / "inventory.db")
+        try:
+            rows = con.execute("SELECT bundle_id, actor, trigger FROM scans").fetchall()
+        finally:
+            con.close()
+        assert rows == [("repo:repo", "alice", "pr")]
+        # provenance is not baked into the content-addressed record
+        rec = json.loads((d / "record.json").read_text(encoding="utf-8"))
+        assert "alice" not in json.dumps(rec)
+
     def test_agent_tools_bridge_and_liveness(self, tmp_path: Path) -> None:
         # SPEC_INVENTORY: the agent->tool join is now answerable, and the
         # liveness tier is surfaced onto the agent row.

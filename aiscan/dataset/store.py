@@ -57,6 +57,14 @@ _COLUMNS: dict[str, tuple[str, ...]] = {
         "bundle_id", "scan_id", "usage_id", "model_value", "method",
         "confidence", "task", "endpoint", "in_agent",
     ),
+    # SPEC_INVENTORY audit spine: the temporal event-log — one row per scanned
+    # (bundle, commit). scan_id is the content hash (tamper-evident); actor/
+    # trigger are scan provenance, NOT record content (so record.json stays
+    # deterministic). "what changed" is bom_diff between consecutive commits.
+    "scans": (
+        "scan_id", "bundle_id", "commit", "base_commit", "scanned_at",
+        "actor", "trigger", "scanner_ver",
+    ),
 }
 
 _KEYS: dict[str, tuple[str, ...]] = {
@@ -68,6 +76,7 @@ _KEYS: dict[str, tuple[str, ...]] = {
     "findings": ("bundle_id", "scan_id", "finding_id"),
     "mcp_servers": ("bundle_id", "scan_id", "server_id"),
     "model_usages": ("bundle_id", "scan_id", "usage_id"),
+    "scans": ("scan_id",),
 }
 
 
@@ -128,6 +137,37 @@ def upsert_record(db_path: Path, record: dict[str, object]) -> str:
     finally:
         conn.close()
     return scan_id
+
+
+def append_scan_event(
+    db_path: Path,
+    *,
+    scan_id: str,
+    bundle_id: str | None,
+    commit: str,
+    base_commit: str | None,
+    scanned_at: str | None,
+    actor: str | None,
+    trigger: str,
+    scanner_ver: str | None,
+) -> None:
+    """Record one scan in the audit event-log (SPEC_INVENTORY audit spine).
+
+    Idempotent per ``scan_id`` (one row per scanned ``(bundle, commit)``): the
+    estate-change log — each commit is one event, and ``bom_diff`` between
+    consecutive commits gives what changed. ``actor``/``trigger`` are scan
+    provenance and live ONLY here, never in the deterministic record."""
+    conn = _connect(db_path)
+    try:
+        conn.execute(
+            'INSERT OR REPLACE INTO "scans" '
+            '(scan_id, bundle_id, "commit", base_commit, scanned_at, actor, trigger, scanner_ver) '
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            (scan_id, bundle_id, commit, base_commit, scanned_at, actor, trigger, scanner_ver),
+        )
+        conn.commit()
+    finally:
+        conn.close()
 
 
 def bom_diff(

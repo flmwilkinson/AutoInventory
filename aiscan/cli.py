@@ -70,6 +70,17 @@ def _attach_log_file(logger: logging.Logger, path: Path, json_logs: bool) -> log
     return handler
 
 
+def _default_actor() -> str | None:
+    """The OS user, for the audit event-log — best-effort (some environments
+    have no resolvable user)."""
+    import getpass
+
+    try:
+        return getpass.getuser()
+    except Exception:
+        return None
+
+
 def run_scan(
     target: str,
     commit: str | None = None,
@@ -85,12 +96,16 @@ def run_scan(
     repo: Path | None = None,
     base: str | None = None,
     full: bool = False,
+    actor: str | None = None,
+    trigger: str = "manual",
 ) -> Path:
     """Run a scan; returns the artifact directory. Never executes repo code.
 
     ``base`` names the commit to diff against for incremental analysis (defaults
     to the bundle's last-scanned commit); ``full`` forces a from-scratch scan and
-    ignores any cache (SPEC-8)."""
+    ignores any cache (SPEC-8). ``actor``/``trigger`` are scan provenance for the
+    audit event-log (who ran it / why: manual|ci|cron|pr|api) — never written to
+    the deterministic record (SPEC_INVENTORY audit spine)."""
     target_path = Path(target)
     if (target_path / "record.json").is_file():
         # SPEC-3 §7.3 enrich-in-place: the target is a prior scan output.
@@ -205,9 +220,23 @@ def run_scan(
             # single-file SQLite keyed by (bundle, commit)) so the org-wide
             # inventory is a live DB, not a rebuild-on-demand artifact. Idempotent
             # — a rescan of the same commit replaces its own rows.
-            from aiscan.dataset import upsert_record
+            from aiscan.dataset import append_scan_event, upsert_record
 
-            upsert_record(out_root / "inventory.db", result.record.model_dump(mode="json"))
+            inventory_db = out_root / "inventory.db"
+            scan_id = upsert_record(inventory_db, result.record.model_dump(mode="json"))
+            # SPEC_INVENTORY audit spine: log who/when/why in the event-log (not
+            # the deterministic record). "what changed" = bom_diff across commits.
+            append_scan_event(
+                inventory_db,
+                scan_id=scan_id,
+                bundle_id=result.record.bundle_id,
+                commit=ingest_result.commit,
+                base_commit=base,
+                scanned_at=result.record.inventory_provenance.scanned_at,
+                actor=actor,
+                trigger=trigger,
+                scanner_ver=scanner_version,
+            )
             if not ingest_result.dirty:
                 _write_scan_manifest(
                     store,
@@ -342,6 +371,16 @@ def scan(
         bool,
         typer.Option("--full", help="Force a full scan, ignoring any cache/manifest"),
     ] = False,
+    actor: Annotated[
+        str | None,
+        typer.Option("--actor", help="Who ran this scan, for the audit event-log "
+                     "(defaults to the OS user; a CI/webhook worker passes the PR author)"),
+    ] = None,
+    trigger: Annotated[
+        str,
+        typer.Option("--trigger", help="Why this scan ran, for the audit event-log: "
+                     "manual | ci | cron | pr | api"),
+    ] = "manual",
     out: Annotated[Path | None, typer.Option("--out", help="Artifact directory")] = None,
     org_pack: Annotated[
         Path | None, typer.Option("--org-pack", help="Org tailoring pack (YAML)")
@@ -443,6 +482,8 @@ def scan(
             repo=repo,
             base=base,
             full=full,
+            actor=actor or _default_actor(),
+            trigger=trigger,
         )
     except IngestError as exc:
         typer.echo(f"error: {exc}", err=True)
