@@ -128,6 +128,47 @@ class TestWriteThrough:
         res = verify_audit_log(db)
         assert res["ok"] is False and res["first_bad_seq"] == 1
 
+    def test_rebuild_preserves_audit_and_governance(
+        self, records_root: Path, tmp_path: Path
+    ) -> None:
+        # SPEC_INVENTORY: rebuild_dataset regenerates the MATRIX from records but
+        # must NEVER destroy the audit ledger / governance (not derivable from
+        # records). Caught when a live estate rebuild wiped the ledger.
+        import json
+
+        from aiscan.dataset.store import (
+            append_audit_entry,
+            rebuild_dataset,
+            set_governance,
+            upsert_record,
+            verify_audit_log,
+        )
+
+        out = tmp_path / "estate"
+        out.mkdir()
+        rec = self._load(records_root, "derived_indicators")
+        (out / "r").mkdir()
+        (out / "r" / "record.json").write_text(json.dumps(rec), encoding="utf-8")
+        db = out / "inventory.db"
+        upsert_record(db, rec)
+        append_audit_entry(
+            db, scan_id="s1", bundle_id="repo:repo", commit="c", base_commit=None,
+            scanned_at="t", actor="fran", trigger="manual", scanner_ver="v",
+        )
+        set_governance(db, "repo:repo", approval_status="approved", actor="ciso", at="2026")
+
+        rebuild_dataset(out, out)  # <- previously nuked the file
+
+        assert verify_audit_log(db)["entries"] == 1  # ledger survived
+        import sqlite3
+
+        con = sqlite3.connect(db)
+        try:
+            gov = con.execute("SELECT approval_status FROM governance").fetchall()
+        finally:
+            con.close()
+        assert gov == [("approved",)]  # governance survived
+
     def test_governance_reconciliation_and_audit(
         self, records_root: Path, tmp_path: Path
     ) -> None:
@@ -162,8 +203,8 @@ class TestWriteThrough:
         assert ("owner", "jane", "ciso") in aud
 
     def test_audit_event_log_captures_who_why(self, tmp_path: Path) -> None:
-        # SPEC_INVENTORY audit spine: who/when/why land in the scans event-log,
-        # NOT in the deterministic record.
+        # SPEC_INVENTORY audit spine: who/when/why land in the audit ledger, NOT
+        # in the deterministic record.
         import json
         import sqlite3
 
@@ -176,7 +217,7 @@ class TestWriteThrough:
         )
         con = sqlite3.connect(out / "inventory.db")
         try:
-            rows = con.execute("SELECT bundle_id, actor, trigger FROM scans").fetchall()
+            rows = con.execute("SELECT bundle_id, actor, trigger FROM audit_log").fetchall()
         finally:
             con.close()
         assert rows == [("repo:repo", "alice", "pr")]

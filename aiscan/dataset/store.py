@@ -65,15 +65,11 @@ _COLUMNS: dict[str, tuple[str, ...]] = {
         "bundle_id", "scan_id", "usage_id", "model_value", "method",
         "confidence", "task", "endpoint", "in_agent",
     ),
-    # SPEC_INVENTORY audit spine: the temporal event-log — one row per scanned
-    # (bundle, commit). scan_id is the content hash (tamper-evident); actor/
-    # trigger are scan provenance, NOT record content (so record.json stays
-    # deterministic). "what changed" is bom_diff between consecutive commits.
-    "scans": (
-        "scan_id", "bundle_id", "commit", "base_commit", "scanned_at",
-        "actor", "trigger", "scanner_ver",
-    ),
 }
+# _COLUMNS are the MATRIX tables — a pure projection of records, rebuilt from
+# records by rebuild_dataset. The audit_log / governance tables (see
+# _ensure_audit_tables) are provenance + human decisions, NOT derivable from
+# records, so they are never in _COLUMNS and never rebuilt/wiped.
 
 _KEYS: dict[str, tuple[str, ...]] = {
     "systems": ("bundle_id", "scan_id"),
@@ -84,7 +80,6 @@ _KEYS: dict[str, tuple[str, ...]] = {
     "findings": ("bundle_id", "scan_id", "finding_id"),
     "mcp_servers": ("bundle_id", "scan_id", "server_id"),
     "model_usages": ("bundle_id", "scan_id", "usage_id"),
-    "scans": ("scan_id",),
 }
 
 
@@ -167,37 +162,6 @@ def upsert_record(db_path: Path, record: dict[str, object]) -> str:
     finally:
         conn.close()
     return scan_id
-
-
-def append_scan_event(
-    db_path: Path,
-    *,
-    scan_id: str,
-    bundle_id: str | None,
-    commit: str,
-    base_commit: str | None,
-    scanned_at: str | None,
-    actor: str | None,
-    trigger: str,
-    scanner_ver: str | None,
-) -> None:
-    """Record one scan in the audit event-log (SPEC_INVENTORY audit spine).
-
-    Idempotent per ``scan_id`` (one row per scanned ``(bundle, commit)``): the
-    estate-change log — each commit is one event, and ``bom_diff`` between
-    consecutive commits gives what changed. ``actor``/``trigger`` are scan
-    provenance and live ONLY here, never in the deterministic record."""
-    conn = _connect(db_path)
-    try:
-        conn.execute(
-            'INSERT OR REPLACE INTO "scans" '
-            '(scan_id, bundle_id, "commit", base_commit, scanned_at, actor, trigger, scanner_ver) '
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-            (scan_id, bundle_id, commit, base_commit, scanned_at, actor, trigger, scanner_ver),
-        )
-        conn.commit()
-    finally:
-        conn.close()
 
 
 def _entry_hash(seq: int, values: tuple[object, ...], prev_hash: str) -> str:
@@ -396,15 +360,17 @@ def rebuild_dataset(records_root: Path, out_dir: Path) -> int:
 
     out_dir.mkdir(parents=True, exist_ok=True)
     db_path = out_dir / "inventory.db"
-    if db_path.exists():
-        db_path.unlink()
-    conn = sqlite3.connect(db_path)
+    # Rebuild the MATRIX tables from records, but NEVER drop the DB: the audit
+    # ledger + governance tables are provenance/decisions, not derivable from
+    # records — nuking the file would destroy the audit trail. Clear only the
+    # matrix tables and refill.
+    conn = _connect(db_path)
     try:
-        _ensure_tables(conn)
         for name, columns in _COLUMNS.items():
+            conn.execute(f'DELETE FROM "{name}"')
             placeholders = ", ".join("?" for _ in columns)
             conn.executemany(
-                f'INSERT OR REPLACE INTO "{name}" VALUES ({placeholders})',
+                f'INSERT INTO "{name}" VALUES ({placeholders})',
                 [tuple(_cell(row.get(c)) for c in columns) for row in tables[name]],
             )
         conn.commit()

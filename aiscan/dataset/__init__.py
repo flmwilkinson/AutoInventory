@@ -2,7 +2,6 @@
 
 from aiscan.dataset.store import (
     append_audit_entry,
-    append_scan_event,
     bom_diff,
     rebuild_dataset,
     set_governance,
@@ -13,7 +12,6 @@ from aiscan.dataset.store import (
 
 __all__ = [
     "append_audit_entry",
-    "append_scan_event",
     "bom_diff",
     "rebuild_dataset",
     "set_governance",

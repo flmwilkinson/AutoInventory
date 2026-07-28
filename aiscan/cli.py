@@ -220,30 +220,24 @@ def run_scan(
             # single-file SQLite keyed by (bundle, commit)) so the org-wide
             # inventory is a live DB, not a rebuild-on-demand artifact. Idempotent
             # — a rescan of the same commit replaces its own rows.
-            from aiscan.dataset import (
-                append_audit_entry,
-                append_scan_event,
-                upsert_record,
-            )
+            from aiscan.dataset import append_audit_entry, upsert_record
 
             inventory_db = out_root / "inventory.db"
             scan_id = upsert_record(inventory_db, result.record.model_dump(mode="json"))
-            # SPEC_INVENTORY audit spine: log who/when/why. append_scan_event is
-            # the per-commit estate index; append_audit_entry is the per-run,
-            # append-only, hash-chained tamper-evident ledger. Both are scan
-            # provenance — never written to the deterministic record.
-            bundle_id = result.record.bundle_id
-            scanned_at = result.record.inventory_provenance.scanned_at
-            commit_ = ingest_result.commit
-            append_scan_event(
-                inventory_db, scan_id=scan_id, bundle_id=bundle_id, commit=commit_,
-                base_commit=base, scanned_at=scanned_at, actor=actor,
-                trigger=trigger, scanner_ver=scanner_version,
-            )
+            # SPEC_INVENTORY audit spine: log who/when/why in the append-only,
+            # hash-chained, tamper-evident ledger (one row per RUN). This is scan
+            # provenance — never written to the deterministic record. "what
+            # changed" = bom_diff between commits.
             append_audit_entry(
-                inventory_db, scan_id=scan_id, bundle_id=bundle_id, commit=commit_,
-                base_commit=base, scanned_at=scanned_at, actor=actor,
-                trigger=trigger, scanner_ver=scanner_version,
+                inventory_db,
+                scan_id=scan_id,
+                bundle_id=result.record.bundle_id,
+                commit=ingest_result.commit,
+                base_commit=base,
+                scanned_at=result.record.inventory_provenance.scanned_at,
+                actor=actor,
+                trigger=trigger,
+                scanner_ver=scanner_version,
             )
             if not ingest_result.dirty:
                 _write_scan_manifest(
