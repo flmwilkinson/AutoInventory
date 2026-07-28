@@ -1,0 +1,7 @@
+{
+  "name": "ts-openai-agents",
+  "private": true,
+  "dependencies": {
+    "@openai/agents": "^0.1.0"
+  }
+}

@@ -1,0 +1,199 @@
+{
+  "edges": [
+    {
+      "attrs": {},
+      "dst": "model:b26fbe34cea0",
+      "evidence": [
+        "agent.py:46-74"
+      ],
+      "family": "ACDG",
+      "src": "agent:bespoke:run-agent",
+      "type": "bind_model"
+    },
+    {
+      "attrs": {},
+      "dst": "prompt:266974bd3c91",
+      "evidence": [
+        "agent.py:46-74"
+      ],
+      "family": "ACDG",
+      "src": "agent:bespoke:run-agent",
+      "type": "bind_prompt"
+    },
+    {
+      "attrs": {},
+      "dst": "state:2b826173674d",
+      "evidence": [
+        "agent.py:46-74"
+      ],
+      "family": "ACDG",
+      "src": "agent:bespoke:run-agent",
+      "type": "bind_state"
+    },
+    {
+      "attrs": {},
+      "dst": "tool:agent.get_weather",
+      "evidence": [
+        "agent.py:46-74"
+      ],
+      "family": "ACDG",
+      "src": "agent:bespoke:run-agent",
+      "type": "bind_tool"
+    },
+    {
+      "attrs": {},
+      "dst": "tool:agent.save_note",
+      "evidence": [
+        "agent.py:46-74"
+      ],
+      "family": "ACDG",
+      "src": "agent:bespoke:run-agent",
+      "type": "bind_tool"
+    }
+  ],
+  "nodes": [
+    {
+      "fact": {
+        "confidence": "high",
+        "entrypoint": false,
+        "evidence": [
+          "agent.py:46-74"
+        ],
+        "framework": null,
+        "id": "agent:bespoke:run-agent",
+        "kind": "bespoke",
+        "language": "python",
+        "location": "production",
+        "method": "bespoke:agent_shape[F1,F2,F3,F4,F5]",
+        "name": "run_agent",
+        "source_files": [
+          "agent.py"
+        ]
+      },
+      "fact_type": "AgentDefF",
+      "id": "agent:bespoke:run-agent",
+      "type": "A"
+    },
+    {
+      "fact": {
+        "api_style": "openai",
+        "confidence": "high",
+        "deployment": null,
+        "endpoint": "https://api.openai.com/v1/chat/completions",
+        "evidence": [
+          "agent.py:52-61"
+        ],
+        "id": "model:b26fbe34cea0",
+        "method": "attribution:literal",
+        "model": "gpt-4o",
+        "provider": "openai",
+        "source_files": [
+          "agent.py"
+        ],
+        "task": "chat"
+      },
+      "fact_type": "ModelRefF",
+      "id": "model:b26fbe34cea0",
+      "type": "M"
+    },
+    {
+      "fact": {
+        "confidence": "high",
+        "content": "You are a helpful weather assistant.",
+        "content_hash": "266974bd3c91",
+        "dynamic": false,
+        "evidence": [
+          "agent.py:52-61"
+        ],
+        "file_ref": null,
+        "id": "prompt:266974bd3c91",
+        "method": "sink:first_system_message",
+        "origin": "literal",
+        "source_files": [
+          "agent.py"
+        ]
+      },
+      "fact_type": "PromptDefF",
+      "id": "prompt:266974bd3c91",
+      "type": "I"
+    },
+    {
+      "fact": {
+        "backing": null,
+        "confidence": "high",
+        "evidence": [
+          "agent.py:47-50"
+        ],
+        "id": "state:2b826173674d",
+        "kind": "messages",
+        "method": "bespoke:agent_shape[F1,F2,F3,F4,F5]",
+        "source_files": [
+          "agent.py"
+        ]
+      },
+      "fact_type": "StateDefF",
+      "id": "state:2b826173674d",
+      "type": "S"
+    },
+    {
+      "fact": {
+        "auth_verb": null,
+        "confidence": "high",
+        "credential_ref": null,
+        "evidence": [
+          "agent.py:11-14"
+        ],
+        "external_target": null,
+        "id": "tool:agent.get_weather",
+        "kind": "function",
+        "method": "bespoke:agent_shape[F1,F2,F3,F4,F5]",
+        "name": "get_weather",
+        "side_effects": [
+          "read"
+        ],
+        "signature": {
+          "params": [
+            "city"
+          ],
+          "returns": null
+        },
+        "source_files": [
+          "agent.py"
+        ]
+      },
+      "fact_type": "ToolDefF",
+      "id": "tool:agent.get_weather",
+      "type": "C"
+    },
+    {
+      "fact": {
+        "auth_verb": null,
+        "confidence": "high",
+        "credential_ref": null,
+        "evidence": [
+          "agent.py:17-21"
+        ],
+        "external_target": null,
+        "id": "tool:agent.save_note",
+        "kind": "function",
+        "method": "bespoke:agent_shape[F1,F2,F3,F4,F5]",
+        "name": "save_note",
+        "side_effects": [
+          "write"
+        ],
+        "signature": {
+          "params": [
+            "text"
+          ],
+          "returns": null
+        },
+        "source_files": [
+          "agent.py"
+        ]
+      },
+      "fact_type": "ToolDefF",
+      "id": "tool:agent.save_note",
+      "type": "C"
+    }
+  ]
+}

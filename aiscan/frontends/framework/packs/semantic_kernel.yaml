@@ -1,0 +1,36 @@
+# Semantic Kernel rule pack (SPEC §6.6). Matching is on resolved identity.
+# `ChatCompletionAgent(service=OpenAIChatCompletion(ai_model_id=...), name=...,
+# instructions=..., plugins=[...])`. The service is a model-adapter instance
+# whose model kwarg is `ai_model_id` (added to the generic adapter probe).
+framework: semantic-kernel
+version: "0.1"
+rules:
+  - id: semantic_kernel.agent_ctor
+    match:
+      kind: call
+      callee_fqname:
+        - semantic_kernel.agents.ChatCompletionAgent
+        - semantic_kernel.agents.OpenAIAssistantAgent
+        - semantic_kernel.agents.AzureAssistantAgent
+        - semantic_kernel.agents.ChatCompletionAgent.ChatCompletionAgent
+    extract:
+      name: {arg: name, resolve: string}
+      model: {arg: [service, model_client, model, llm], resolve: model_ref}
+      instructions: {arg: [instructions, system_message, system_prompt], resolve: prompt}
+      tools: {arg: [plugins, tools, functions], resolve: ref_list}
+    model_defaults: {api_style: openai}
+    emit:
+      - {fact: AgentDef, name: $name}
+      - {fact: BindModel, model: $model}
+      - {fact: BindPrompt, prompt: $instructions}
+      - {fact: BindComponents, items: $tools}
+
+  - id: semantic_kernel.kernel_function
+    match:
+      kind: decorator
+      callee_fqname:
+        - semantic_kernel.functions.kernel_function
+        - semantic_kernel.functions.kernel_function_decorator.kernel_function
+        - semantic_kernel.kernel_function
+    emit:
+      - {fact: ToolFromDef}

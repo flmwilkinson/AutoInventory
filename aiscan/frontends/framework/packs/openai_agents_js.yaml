@@ -1,0 +1,56 @@
+# OpenAI Agents SDK for TypeScript (SPEC-4 W4). Identity is dot-joined
+# "<specifier>.<export>"; constructor options are a single object literal, read
+# by the engine's object-aware arg extraction.
+framework: openai-agents-js
+version: "0.1"
+rules:
+  - id: openai_agents_js.agent_ctor
+    match:
+      kind: call
+      callee_fqname:
+        - "@openai/agents.Agent"
+        - "@openai/agents-core.Agent"
+    extract:
+      name: {arg: name, resolve: string, required: true}
+      model: {arg: model, resolve: model_ref}
+      instructions: {arg: instructions, resolve: prompt}
+      tools: {arg: tools, resolve: ref_list}
+      handoffs: {arg: handoffs, resolve: ref_list}
+      mcpServers: {arg: mcpServers, resolve: ref_list}
+    model_defaults: {api_style: openai, provider: openai}
+    emit:
+      - {fact: AgentDef, name: $name}
+      - {fact: BindModel, model: $model}
+      - {fact: BindPrompt, prompt: $instructions}
+      - {fact: BindComponents, items: $tools}
+      - {fact: Transfer, targets: $handoffs, kind: handoff}
+      - {fact: BindComponents, items: $mcpServers}
+
+  - id: openai_agents_js.tool
+    match:
+      kind: call
+      callee_fqname: "@openai/agents.tool"
+    extract:
+      items: {arg: execute, resolve: ref_list}
+    emit:
+      - {fact: ToolFromRefs, items: $items}
+
+  - id: openai_agents_js.mcp
+    match:
+      kind: call
+      callee_fqname:
+        - "@openai/agents.hostedMcpTool"
+        - "@openai/agents.MCPServerStdio"
+        - "@openai/agents.MCPServerSse"
+        - "@openai/agents.MCPServerStreamableHttp"
+    emit:
+      - {fact: MCPFromCall}
+
+  - id: openai_agents_js.run
+    match:
+      kind: call
+      callee_fqname: "@openai/agents.run"
+    extract:
+      agent: {arg: 0, resolve: ref}
+    emit:
+      - {fact: MarkEntrypoint, agent: $agent}

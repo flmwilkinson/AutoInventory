@@ -1,0 +1,7 @@
+{
+  "name": "ts-gateway-agent",
+  "private": true,
+  "dependencies": {
+    "typescript": "^5.4.0"
+  }
+}

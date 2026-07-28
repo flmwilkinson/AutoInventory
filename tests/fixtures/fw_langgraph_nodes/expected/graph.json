@@ -1,0 +1,62 @@
+{
+  "edges": [
+    {
+      "attrs": {},
+      "dst": "model:71585868a217",
+      "evidence": [
+        "pipeline.py:34-34",
+        "pipeline.py:10-10"
+      ],
+      "family": "ACDG",
+      "src": "agent:framework:plan",
+      "type": "bind_model"
+    }
+  ],
+  "nodes": [
+    {
+      "fact": {
+        "confidence": "high",
+        "entrypoint": false,
+        "evidence": [
+          "pipeline.py:34-34",
+          "pipeline.py:10-10"
+        ],
+        "framework": "langgraph",
+        "id": "agent:framework:plan",
+        "kind": "framework",
+        "language": "python",
+        "location": "production",
+        "method": "langgraph.add_node+promotion:sink",
+        "name": "plan",
+        "source_files": [
+          "pipeline.py"
+        ]
+      },
+      "fact_type": "AgentDefF",
+      "id": "agent:framework:plan",
+      "type": "A"
+    },
+    {
+      "fact": {
+        "api_style": "openai",
+        "confidence": "high",
+        "deployment": null,
+        "endpoint": null,
+        "evidence": [
+          "pipeline.py:10-10"
+        ],
+        "id": "model:71585868a217",
+        "method": "attribution:constant",
+        "model": "gpt-4o-mini",
+        "provider": "openai",
+        "source_files": [
+          "pipeline.py"
+        ],
+        "task": "chat"
+      },
+      "fact_type": "ModelRefF",
+      "id": "model:71585868a217",
+      "type": "M"
+    }
+  ]
+}

@@ -1,0 +1,156 @@
+{
+  "edges": [
+    {
+      "attrs": {},
+      "dst": "model:8974a16244f8",
+      "evidence": [
+        "replies.py:10-15"
+      ],
+      "family": "ACDG",
+      "src": "usage:e66d6d9c1e52",
+      "type": "uses_model"
+    },
+    {
+      "attrs": {},
+      "dst": "model:8974a16244f8",
+      "evidence": [
+        "replies.py:21-26"
+      ],
+      "family": "ACDG",
+      "src": "usage:ff9b9d1bfb39",
+      "type": "uses_model"
+    },
+    {
+      "attrs": {},
+      "dst": "prompt:7a27b68a2995",
+      "evidence": [
+        "replies.py:10-15"
+      ],
+      "family": "ACDG",
+      "src": "usage:e66d6d9c1e52",
+      "type": "uses_prompt"
+    },
+    {
+      "attrs": {},
+      "dst": "prompt:d0d22d32042c",
+      "evidence": [
+        "replies.py:21-26"
+      ],
+      "family": "ACDG",
+      "src": "usage:ff9b9d1bfb39",
+      "type": "uses_prompt"
+    }
+  ],
+  "nodes": [
+    {
+      "fact": {
+        "api_style": "anthropic",
+        "confidence": "high",
+        "deployment": null,
+        "endpoint": null,
+        "evidence": [
+          "replies.py:10-15",
+          "replies.py:21-26"
+        ],
+        "id": "model:8974a16244f8",
+        "method": "attribution:literal",
+        "model": "claude-sonnet-4-5",
+        "provider": "anthropic",
+        "source_files": [
+          "replies.py"
+        ],
+        "task": "chat"
+      },
+      "fact_type": "ModelRefF",
+      "id": "model:8974a16244f8",
+      "type": "M"
+    },
+    {
+      "fact": {
+        "confidence": "high",
+        "content": "# Escalation assistant\n\nYou are the escalation assistant for premium support. Stay factual,\napologise once, and always state the next concrete step.\n",
+        "content_hash": "7a27b68a2995",
+        "dynamic": false,
+        "evidence": [
+          "prompts/system.md:1-1",
+          "replies.py:10-15"
+        ],
+        "file_ref": "prompts/system.md",
+        "id": "prompt:7a27b68a2995",
+        "method": "config.prompt_files+sink:system_arg",
+        "origin": "file",
+        "source_files": [
+          "prompts/system.md",
+          "replies.py"
+        ]
+      },
+      "fact_type": "PromptDefF",
+      "id": "prompt:7a27b68a2995",
+      "type": "I"
+    },
+    {
+      "fact": {
+        "confidence": "medium",
+        "content": {
+          "dynamic": true,
+          "template": "You greet {customer_name} warmly and briefly."
+        },
+        "content_hash": "d0d22d32042c",
+        "dynamic": true,
+        "evidence": [
+          "replies.py:21-26"
+        ],
+        "file_ref": null,
+        "id": "prompt:d0d22d32042c",
+        "method": "sink:system_arg",
+        "origin": "literal",
+        "source_files": [
+          "replies.py"
+        ]
+      },
+      "fact_type": "PromptDefF",
+      "id": "prompt:d0d22d32042c",
+      "type": "I"
+    },
+    {
+      "fact": {
+        "confidence": "high",
+        "evidence": [
+          "replies.py:10-15"
+        ],
+        "id": "usage:e66d6d9c1e52",
+        "in_agent": false,
+        "method": "sink:sdk",
+        "model_id": "model:8974a16244f8",
+        "prompt_id": "prompt:7a27b68a2995",
+        "source_files": [
+          "replies.py"
+        ],
+        "task": "chat"
+      },
+      "fact_type": "LLMCallSiteF",
+      "id": "usage:e66d6d9c1e52",
+      "type": "L"
+    },
+    {
+      "fact": {
+        "confidence": "high",
+        "evidence": [
+          "replies.py:21-26"
+        ],
+        "id": "usage:ff9b9d1bfb39",
+        "in_agent": false,
+        "method": "sink:sdk",
+        "model_id": "model:8974a16244f8",
+        "prompt_id": "prompt:d0d22d32042c",
+        "source_files": [
+          "replies.py"
+        ],
+        "task": "chat"
+      },
+      "fact_type": "LLMCallSiteF",
+      "id": "usage:ff9b9d1bfb39",
+      "type": "L"
+    }
+  ]
+}

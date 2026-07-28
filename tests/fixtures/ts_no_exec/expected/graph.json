@@ -1,0 +1,58 @@
+{
+  "edges": [
+    {
+      "attrs": {},
+      "dst": "model:66e2518d7372",
+      "evidence": [
+        "evil.ts:12-15"
+      ],
+      "family": "ACDG",
+      "src": "usage:41f8f1698a9f",
+      "type": "uses_model"
+    }
+  ],
+  "nodes": [
+    {
+      "fact": {
+        "api_style": "openai",
+        "confidence": "high",
+        "deployment": null,
+        "endpoint": null,
+        "evidence": [
+          "evil.ts:12-15"
+        ],
+        "id": "model:66e2518d7372",
+        "method": "attribution:literal",
+        "model": "gpt-4o",
+        "provider": "openai",
+        "source_files": [
+          "evil.ts"
+        ],
+        "task": "chat"
+      },
+      "fact_type": "ModelRefF",
+      "id": "model:66e2518d7372",
+      "type": "M"
+    },
+    {
+      "fact": {
+        "confidence": "high",
+        "evidence": [
+          "evil.ts:12-15"
+        ],
+        "id": "usage:41f8f1698a9f",
+        "in_agent": false,
+        "method": "sink:sdk",
+        "model_id": "model:66e2518d7372",
+        "prompt_id": null,
+        "source_files": [
+          "evil.ts"
+        ],
+        "task": "chat"
+      },
+      "fact_type": "LLMCallSiteF",
+      "id": "usage:41f8f1698a9f",
+      "type": "L"
+    }
+  ]
+}

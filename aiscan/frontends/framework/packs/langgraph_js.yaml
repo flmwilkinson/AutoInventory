@@ -1,0 +1,80 @@
+# LangGraph.js rule pack (SPEC-4 W4). camelCase methods; options objects.
+# StateGraph nodes are AgentCandidates, promoted only when the node function
+# contains an LLM sink.
+framework: langgraph-js
+version: "0.1"
+rules:
+  - id: langgraph_js.create_react_agent
+    match:
+      kind: call
+      callee_fqname:
+        - "@langchain/langgraph.createReactAgent"
+        - "@langchain/langgraph/prebuilt.createReactAgent"
+    extract:
+      name: {arg: __assign_target__, resolve: string}
+      model: {arg: llm, resolve: model_ref}
+      tools: {arg: tools, resolve: ref_list}
+    emit:
+      - {fact: AgentDef, name: $name}
+      - {fact: BindModel, model: $model}
+      - {fact: BindComponents, items: $tools}
+
+  - id: langgraph_js.add_node
+    match:
+      kind: call
+      callee_fqname: "@langchain/langgraph.StateGraph.addNode"
+    extract:
+      name: {arg: 0, resolve: string, required: true}
+      fn: {arg: 1, resolve: raw, required: true}
+    emit:
+      - {fact: AgentCandidate, name: $name, fn: $fn}
+
+  - id: langgraph_js.add_node_object
+    match:
+      kind: call
+      callee_fqname: "@langchain/langgraph.StateGraph.addNode"
+    extract:
+      fn: {arg: 0, resolve: raw, required: true}
+    emit:
+      - {fact: AgentCandidate, fn: $fn}
+
+  - id: langgraph_js.add_edge
+    match:
+      kind: call
+      callee_fqname: "@langchain/langgraph.StateGraph.addEdge"
+    extract:
+      from: {arg: 0, resolve: string}
+      to: {arg: 1, resolve: string}
+    emit:
+      - {fact: RouteEdge, from: $from, to: $to}
+
+  - id: langgraph_js.add_conditional_edges
+    match:
+      kind: call
+      callee_fqname: "@langchain/langgraph.StateGraph.addConditionalEdges"
+    extract:
+      source: {arg: 0, resolve: string}
+      guard: {arg: 1, resolve: raw}
+      mapping: {arg: 2, resolve: raw}
+    emit:
+      - {fact: CondRouteEdges, source: $source, guard: $guard, mapping: $mapping}
+
+  - id: langgraph_js.tool
+    match:
+      kind: call
+      callee_fqname:
+        - "@langchain/core/tools.tool"
+        - "langchain/tools.tool"
+    extract:
+      items: {arg: 0, resolve: ref_list}
+    emit:
+      - {fact: ToolFromRefs, items: $items}
+
+  - id: langgraph_js.checkpointer
+    match:
+      kind: call
+      callee_fqname:
+        - "@langchain/langgraph.MemorySaver"
+        - "@langchain/langgraph.MemorySaver.fromConfig"
+    emit:
+      - {fact: StateFromCall, kind: session}

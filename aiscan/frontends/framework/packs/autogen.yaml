@@ -1,0 +1,48 @@
+# AutoGen rule pack (SPEC §6.6). Matching is on resolved identity. Covers the
+# v0.4 AgentChat API (`autogen_agentchat.agents.AssistantAgent` with a
+# `model_client` adapter) and the legacy v0.2 API (`autogen.AssistantAgent`
+# with an `llm_config` dict). Name and model_client may be positional or keyword.
+framework: autogen
+version: "0.1"
+rules:
+  - id: autogen.assistant_agent_v04
+    match:
+      kind: call
+      callee_fqname:
+        - autogen_agentchat.agents.AssistantAgent
+        - autogen_agentchat.agents.UserProxyAgent
+        - autogen_agentchat.agents.SocietyOfMindAgent
+        - autogen_agentchat.agents.CodeExecutorAgent
+    extract:
+      name: {arg: [0, name], resolve: string, required: true}
+      # Kwarg-drift resilience (SPEC-9 A1): the current kwarg first, then
+      # model-ish alternates a version bump might rename to.
+      model: {arg: [1, model_client, model, llm], resolve: model_ref}
+      instructions: {arg: [system_message, system_prompt, instructions], resolve: prompt}
+      tools: {arg: [tools, plugins, functions], resolve: ref_list}
+      handoffs: {arg: [handoffs, handoff_to], resolve: ref_list}
+    model_defaults: {api_style: openai}
+    emit:
+      - {fact: AgentDef, name: $name}
+      - {fact: BindModel, model: $model}
+      - {fact: BindPrompt, prompt: $instructions}
+      - {fact: BindComponents, items: $tools}
+      - {fact: Transfer, targets: $handoffs, kind: handoff}
+
+  - id: autogen.conversable_agent_v02
+    match:
+      kind: call
+      callee_fqname:
+        - autogen.AssistantAgent
+        - autogen.ConversableAgent
+        - autogen.UserProxyAgent
+        - autogen.agentchat.AssistantAgent
+        - autogen.agentchat.ConversableAgent
+        - autogen.agentchat.UserProxyAgent
+    extract:
+      name: {arg: [0, name], resolve: string, required: true}
+      instructions: {arg: system_message, resolve: prompt}
+    model_defaults: {api_style: openai}
+    emit:
+      - {fact: AgentDef, name: $name}
+      - {fact: BindPrompt, prompt: $instructions}

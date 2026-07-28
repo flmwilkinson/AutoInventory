@@ -1,0 +1,226 @@
+{
+  "edges": [
+    {
+      "attrs": {},
+      "dst": "model:71585868a217",
+      "evidence": [
+        "crew.py:23-28"
+      ],
+      "family": "ACDG",
+      "src": "agent:framework:report-writer",
+      "type": "bind_model"
+    },
+    {
+      "attrs": {},
+      "dst": "model:66e2518d7372",
+      "evidence": [
+        "crew.py:15-21"
+      ],
+      "family": "ACDG",
+      "src": "agent:framework:research-analyst",
+      "type": "bind_model"
+    },
+    {
+      "attrs": {},
+      "dst": "prompt:cd1e7f665ef3",
+      "evidence": [
+        "crew.py:23-28"
+      ],
+      "family": "ACDG",
+      "src": "agent:framework:report-writer",
+      "type": "bind_prompt"
+    },
+    {
+      "attrs": {},
+      "dst": "prompt:9f56d915bf55",
+      "evidence": [
+        "crew.py:15-21"
+      ],
+      "family": "ACDG",
+      "src": "agent:framework:research-analyst",
+      "type": "bind_prompt"
+    },
+    {
+      "attrs": {},
+      "dst": "tool:crew.search_reports",
+      "evidence": [
+        "crew.py:15-21"
+      ],
+      "family": "ACDG",
+      "src": "agent:framework:research-analyst",
+      "type": "bind_tool"
+    },
+    {
+      "attrs": {},
+      "dst": "agent:framework:report-writer",
+      "evidence": [
+        "crew.py:42-46"
+      ],
+      "family": "ACFG",
+      "src": "agent:framework:research-analyst",
+      "type": "transfer:route"
+    }
+  ],
+  "nodes": [
+    {
+      "fact": {
+        "confidence": "high",
+        "entrypoint": false,
+        "evidence": [
+          "crew.py:23-28"
+        ],
+        "framework": "crewai",
+        "id": "agent:framework:report-writer",
+        "kind": "framework",
+        "language": "python",
+        "location": "production",
+        "method": "crewai.agent_ctor",
+        "name": "Report Writer",
+        "source_files": [
+          "crew.py"
+        ]
+      },
+      "fact_type": "AgentDefF",
+      "id": "agent:framework:report-writer",
+      "type": "A"
+    },
+    {
+      "fact": {
+        "confidence": "high",
+        "entrypoint": false,
+        "evidence": [
+          "crew.py:15-21"
+        ],
+        "framework": "crewai",
+        "id": "agent:framework:research-analyst",
+        "kind": "framework",
+        "language": "python",
+        "location": "production",
+        "method": "crewai.agent_ctor",
+        "name": "Research Analyst",
+        "source_files": [
+          "crew.py"
+        ]
+      },
+      "fact_type": "AgentDefF",
+      "id": "agent:framework:research-analyst",
+      "type": "A"
+    },
+    {
+      "fact": {
+        "api_style": "openai",
+        "confidence": "high",
+        "deployment": null,
+        "endpoint": null,
+        "evidence": [
+          "crew.py:15-21"
+        ],
+        "id": "model:66e2518d7372",
+        "method": "attribution:literal",
+        "model": "gpt-4o",
+        "provider": null,
+        "source_files": [
+          "crew.py"
+        ],
+        "task": "chat"
+      },
+      "fact_type": "ModelRefF",
+      "id": "model:66e2518d7372",
+      "type": "M"
+    },
+    {
+      "fact": {
+        "api_style": "openai",
+        "confidence": "high",
+        "deployment": null,
+        "endpoint": null,
+        "evidence": [
+          "crew.py:23-28"
+        ],
+        "id": "model:71585868a217",
+        "method": "attribution:literal",
+        "model": "gpt-4o-mini",
+        "provider": null,
+        "source_files": [
+          "crew.py"
+        ],
+        "task": "chat"
+      },
+      "fact_type": "ModelRefF",
+      "id": "model:71585868a217",
+      "type": "M"
+    },
+    {
+      "fact": {
+        "confidence": "high",
+        "content": "Find and summarise market data for the requested sector.\n\nYou are a meticulous analyst who cites every number.",
+        "content_hash": "9f56d915bf55",
+        "dynamic": false,
+        "evidence": [
+          "crew.py:15-21"
+        ],
+        "file_ref": null,
+        "id": "prompt:9f56d915bf55",
+        "method": "crewai.agent_ctor",
+        "origin": "constructed",
+        "source_files": [
+          "crew.py"
+        ]
+      },
+      "fact_type": "PromptDefF",
+      "id": "prompt:9f56d915bf55",
+      "type": "I"
+    },
+    {
+      "fact": {
+        "confidence": "high",
+        "content": "Turn the research notes into a client-ready report.\n\nYou are a clear, concise technical writer.",
+        "content_hash": "cd1e7f665ef3",
+        "dynamic": false,
+        "evidence": [
+          "crew.py:23-28"
+        ],
+        "file_ref": null,
+        "id": "prompt:cd1e7f665ef3",
+        "method": "crewai.agent_ctor",
+        "origin": "constructed",
+        "source_files": [
+          "crew.py"
+        ]
+      },
+      "fact_type": "PromptDefF",
+      "id": "prompt:cd1e7f665ef3",
+      "type": "I"
+    },
+    {
+      "fact": {
+        "auth_verb": null,
+        "confidence": "high",
+        "credential_ref": null,
+        "evidence": [
+          "crew.py:9-12"
+        ],
+        "external_target": null,
+        "id": "tool:crew.search_reports",
+        "kind": "function",
+        "method": "crewai.agent_ctor+crewai.tool_decorator",
+        "name": "search_reports",
+        "side_effects": [
+          "read"
+        ],
+        "signature": {
+          "params": [
+            "query"
+          ],
+          "returns": null
+        },
+        "source_files": [
+          "crew.py"
+        ]
+      },
+      "fact_type": "ToolDefF",
+      "id": "tool:crew.search_reports",
+      "type": "C"
+    }
+  ]
+}

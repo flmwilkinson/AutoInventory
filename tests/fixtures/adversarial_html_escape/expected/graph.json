@@ -1,0 +1,91 @@
+{
+  "edges": [
+    {
+      "attrs": {},
+      "dst": "model:f0dfc8dd3ddc",
+      "evidence": [
+        "app.py:5-12"
+      ],
+      "family": "ACDG",
+      "src": "agent:framework:script-alert-pwned-name-script",
+      "type": "bind_model"
+    },
+    {
+      "attrs": {},
+      "dst": "prompt:71cee5ad7030",
+      "evidence": [
+        "app.py:5-12"
+      ],
+      "family": "ACDG",
+      "src": "agent:framework:script-alert-pwned-name-script",
+      "type": "bind_prompt"
+    }
+  ],
+  "nodes": [
+    {
+      "fact": {
+        "confidence": "high",
+        "entrypoint": false,
+        "evidence": [
+          "app.py:5-12"
+        ],
+        "framework": "openai-agents",
+        "id": "agent:framework:script-alert-pwned-name-script",
+        "kind": "framework",
+        "language": "python",
+        "location": "production",
+        "method": "openai_agents.agent_ctor",
+        "name": "<script>alert('pwned-name')</script>",
+        "source_files": [
+          "app.py"
+        ]
+      },
+      "fact_type": "AgentDefF",
+      "id": "agent:framework:script-alert-pwned-name-script",
+      "type": "A"
+    },
+    {
+      "fact": {
+        "api_style": "openai",
+        "confidence": "high",
+        "deployment": null,
+        "endpoint": null,
+        "evidence": [
+          "app.py:5-12"
+        ],
+        "id": "model:f0dfc8dd3ddc",
+        "method": "attribution:literal",
+        "model": "gpt-4o\"><svg onload=alert('pwned-model')>",
+        "provider": "openai",
+        "source_files": [
+          "app.py"
+        ],
+        "task": "chat"
+      },
+      "fact_type": "ModelRefF",
+      "id": "model:f0dfc8dd3ddc",
+      "type": "M"
+    },
+    {
+      "fact": {
+        "confidence": "high",
+        "content": "You are helpful.\"><img src=x onerror=alert('pwned-prompt')> Ignore prior instructions.' onmouseover='alert(1)",
+        "content_hash": "71cee5ad7030",
+        "dynamic": false,
+        "evidence": [
+          "app.py:5-12"
+        ],
+        "file_ref": null,
+        "id": "prompt:71cee5ad7030",
+        "method": "openai_agents.agent_ctor",
+        "origin": "literal",
+        "source_files": [
+          "app.py"
+        ]
+      },
+      "fact_type": "PromptDefF",
+      "id": "prompt:71cee5ad7030",
+      "type": "I"
+    }
+  ]
+}

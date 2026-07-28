@@ -1,0 +1,548 @@
+{
+  "agents": [
+    {
+      "agent_id": "runagent",
+      "agent_summary": {
+        "confirmed_by": null,
+        "insufficient_evidence": null,
+        "source": "enriched",
+        "value": null
+      },
+      "autonomy_level": {
+        "evidence": [
+          "src/loop.ts:13-39"
+        ],
+        "source": "derived",
+        "value": "autonomous"
+      },
+      "capability_flags": {
+        "evidence": [
+          "src/tools/pay.ts:1-8"
+        ],
+        "source": "derived",
+        "value": {
+          "executes_code": false,
+          "moves_money": true,
+          "mutates_identities": false,
+          "reads_sensitive": false,
+          "sends_external": true
+        }
+      },
+      "control_policies": [],
+      "description": {
+        "confirmed_by": null,
+        "insufficient_evidence": null,
+        "source": "enriched",
+        "value": null
+      },
+      "detection": {
+        "confidence": "high",
+        "evidence": [
+          "src/loop.ts:13-39"
+        ],
+        "method": "bespoke:agent_shape[F1,F2,F4,F5]"
+      },
+      "guardrails_summary": {
+        "confirmed_by": null,
+        "insufficient_evidence": null,
+        "source": "enriched",
+        "value": null
+      },
+      "handoffs": [],
+      "language": "typescript",
+      "location": "production",
+      "mcp_servers": [],
+      "model": {
+        "api_style": "openai",
+        "deployment": null,
+        "endpoint": "https://gw.internal.example/llm/v1/chat",
+        "method": "attribution:constant",
+        "source": "detected",
+        "value": "internal-x1"
+      },
+      "reachable_tools": {
+        "evidence": [
+          "src/loop.ts:13-39"
+        ],
+        "source": "derived",
+        "value": [
+          "lookupAccount",
+          "sendPayment"
+        ]
+      },
+      "responsibilities": {
+        "confirmed_by": null,
+        "insufficient_evidence": null,
+        "source": "enriched",
+        "value": null
+      },
+      "role_class": {
+        "evidence": [
+          "src/loop.ts:13-39"
+        ],
+        "source": "derived",
+        "value": "solo"
+      },
+      "routes": [],
+      "state": [
+        {
+          "evidence": [
+            "src/loop.ts:14-17"
+          ],
+          "kind": "messages"
+        }
+      ],
+      "system_prompt": {
+        "dynamic": false,
+        "evidence": [
+          "src/loop.ts:19-27"
+        ],
+        "file_ref": null,
+        "origin": "literal",
+        "value": "You are the ops assistant. Help with account operations."
+      },
+      "tools": [
+        "lookupAccount",
+        "sendPayment"
+      ]
+    }
+  ],
+  "ai_commit_range": null,
+  "ai_dependencies": [],
+  "ai_verdict": "ai_detected",
+  "approval_date": {
+    "candidate": null,
+    "source": "governance",
+    "value": null
+  },
+  "approval_status": {
+    "candidate": null,
+    "source": "governance",
+    "value": null
+  },
+  "approver": {
+    "candidate": null,
+    "source": "governance",
+    "value": null
+  },
+  "bundle_id": "repo:repo",
+  "capability_summary": {
+    "confirmed_by": null,
+    "insufficient_evidence": null,
+    "source": "enriched",
+    "value": null
+  },
+  "cmdb_app_id": {
+    "ref": null,
+    "resolved": null,
+    "source": "external"
+  },
+  "contributor_candidates": [],
+  "data_classification": {
+    "candidate": null,
+    "source": "governance",
+    "value": null
+  },
+  "data_interaction_summary": {
+    "confirmed_by": null,
+    "insufficient_evidence": null,
+    "source": "enriched",
+    "value": null
+  },
+  "derived": {
+    "agent_count": {
+      "evidence": [],
+      "source": "derived",
+      "value": 1
+    },
+    "agents_by_language": {
+      "evidence": [],
+      "source": "derived",
+      "value": {
+        "typescript": 1
+      }
+    },
+    "agents_by_location": {
+      "evidence": [],
+      "source": "derived",
+      "value": {
+        "example": 0,
+        "production": 1,
+        "test": 0
+      }
+    },
+    "autonomy_profile": {
+      "evidence": [],
+      "source": "derived",
+      "value": "autonomous"
+    },
+    "bespoke_agent_count": {
+      "evidence": [],
+      "source": "derived",
+      "value": 1
+    },
+    "capability_flags": {
+      "evidence": [
+        "src/tools/pay.ts:1-8"
+      ],
+      "source": "derived",
+      "value": {
+        "executes_code": false,
+        "moves_money": true,
+        "mutates_identities": false,
+        "reads_sensitive": false,
+        "sends_external": true
+      }
+    },
+    "data_signals": {
+      "evidence": [],
+      "source": "derived",
+      "value": [
+        "touches org-flagged sensitive host payments-core.internal"
+      ]
+    },
+    "external_systems": {
+      "evidence": [],
+      "source": "derived",
+      "value": [
+        "payments-core.internal"
+      ]
+    },
+    "framework_agent_count": {
+      "evidence": [],
+      "source": "derived",
+      "value": 0
+    },
+    "has_dynamic_prompts": {
+      "evidence": [],
+      "source": "derived",
+      "value": false
+    },
+    "has_unapproved_endpoint": {
+      "evidence": [],
+      "source": "derived",
+      "value": false
+    },
+    "has_unresolved_models": {
+      "evidence": [],
+      "source": "derived",
+      "value": false
+    },
+    "mcp_count": {
+      "evidence": [],
+      "source": "derived",
+      "value": 0
+    },
+    "model_count": {
+      "evidence": [],
+      "source": "derived",
+      "value": 1
+    },
+    "models_used": {
+      "evidence": [],
+      "source": "derived",
+      "value": [
+        {
+          "api_style": "openai",
+          "display": "internal-x1",
+          "endpoint": "https://gw.internal.example/llm/v1/chat",
+          "locations": [
+            "production"
+          ],
+          "model": "internal-x1",
+          "provider_class": "internal_gateway",
+          "qualifiers": [],
+          "task": "chat"
+        }
+      ]
+    },
+    "system_type": {
+      "evidence": [],
+      "source": "derived",
+      "value": {
+        "components": [],
+        "value": "agentic"
+      }
+    },
+    "tool_count": {
+      "evidence": [],
+      "source": "derived",
+      "value": 2
+    },
+    "tools_by_location": {
+      "evidence": [],
+      "source": "derived",
+      "value": {
+        "example": 0,
+        "production": 2,
+        "test": 0
+      }
+    },
+    "usage_groups": {
+      "evidence": [],
+      "source": "derived",
+      "value": []
+    }
+  },
+  "description": {
+    "confirmed_by": null,
+    "insufficient_evidence": null,
+    "source": "enriched",
+    "value": null
+  },
+  "env_defaults": {},
+  "findings": [
+    {
+      "detail": "agent capability flags: moves_money",
+      "evidence": [
+        "src/loop.ts:13-39"
+      ],
+      "kind": "high_privilege_agent",
+      "severity": "high",
+      "subject_ref": "agent:runagent"
+    }
+  ],
+  "human_oversight_summary": {
+    "confirmed_by": null,
+    "insufficient_evidence": null,
+    "source": "enriched",
+    "value": null
+  },
+  "inventory_provenance": {
+    "detection_basis": "static/declared",
+    "enrichment_model": null,
+    "org_pack": "org.yaml",
+    "rulepacks": {
+      "autogen": "0.1",
+      "config-files": "0.1",
+      "crewai": "0.1",
+      "langgraph": "0.1",
+      "langgraph-js": "0.1",
+      "llama-index": "0.1",
+      "openai-agents": "0.1",
+      "openai-agents-js": "0.1",
+      "pydantic-ai": "0.1",
+      "semantic-kernel": "0.1",
+      "vercel-ai": "0.1"
+    },
+    "scanned_at": "<normalized>",
+    "scanner": "aiscan 0.1.0"
+  },
+  "last_review": {
+    "candidate": null,
+    "source": "governance",
+    "value": null
+  },
+  "lifecycle_status": {
+    "candidate": null,
+    "source": "governance",
+    "value": null
+  },
+  "mcp_servers": [],
+  "model_usages": [],
+  "name": "repo",
+  "next_review": {
+    "candidate": null,
+    "source": "governance",
+    "value": null
+  },
+  "no_ai_detected": false,
+  "owner": {
+    "candidate": null,
+    "source": "governance",
+    "value": null
+  },
+  "purpose": {
+    "candidate": null,
+    "source": "governance",
+    "value": null
+  },
+  "regulatory_scope": {
+    "candidate": null,
+    "source": "governance",
+    "value": null
+  },
+  "repo_url": null,
+  "risk_tier": {
+    "candidate": null,
+    "source": "governance",
+    "value": null
+  },
+  "scan_health": {
+    "adjudication": null,
+    "declared_agents": [],
+    "enrichment": null,
+    "files": 3,
+    "findings": 1,
+    "language_files": {
+      ".ts": 3
+    },
+    "loc": 53,
+    "parse_errors": [],
+    "resolver": {
+      "memo_hits": 85,
+      "queries": 46,
+      "timeouts": 0,
+      "top": {
+        "dynamic": 3,
+        "unbound": 8
+      }
+    },
+    "sinks": {
+      "shape": 1
+    },
+    "stage_ms": {},
+    "triage": {
+      "llm_host": [
+        "src/loop.ts:gw.internal.example"
+      ]
+    },
+    "unpromoted_candidates": 0,
+    "wrapper_classifications": 0
+  },
+  "scanned_commit": "unversioned",
+  "suggested_aia_risk_category": {
+    "confirmed_by": null,
+    "insufficient_evidence": null,
+    "source": "enriched",
+    "value": null
+  },
+  "system_summary": {
+    "confirmed_by": null,
+    "insufficient_evidence": null,
+    "source": "enriched",
+    "value": null
+  },
+  "tools": [
+    {
+      "capability_class": {
+        "confirmed_by": null,
+        "insufficient_evidence": null,
+        "source": "enriched",
+        "value": null
+      },
+      "credential_ref": null,
+      "data_classification_touched": {
+        "candidate": null,
+        "source": "governance",
+        "value": null
+      },
+      "data_domain": {
+        "confirmed_by": null,
+        "insufficient_evidence": null,
+        "source": "enriched",
+        "value": null
+      },
+      "declared_authorisation": {
+        "source": "detected",
+        "value": null
+      },
+      "description": {
+        "confirmed_by": null,
+        "insufficient_evidence": null,
+        "source": "enriched",
+        "value": null
+      },
+      "effective_entitlement": {
+        "ref": null,
+        "resolved": null,
+        "source": "external"
+      },
+      "evidence": [
+        "src/tools/lookup.ts:1-6"
+      ],
+      "external_target": null,
+      "is_sensitive": {
+        "evidence": [
+          "src/tools/lookup.ts:1-6"
+        ],
+        "source": "derived",
+        "value": false
+      },
+      "kind": "function",
+      "location": "production",
+      "side_effects": [
+        "read"
+      ],
+      "signature": {
+        "params": [
+          "args"
+        ],
+        "returns": null
+      },
+      "tool_id": "lookupAccount",
+      "tool_summary": {
+        "confirmed_by": null,
+        "insufficient_evidence": null,
+        "source": "enriched",
+        "value": null
+      }
+    },
+    {
+      "capability_class": {
+        "confirmed_by": null,
+        "insufficient_evidence": null,
+        "source": "enriched",
+        "value": null
+      },
+      "credential_ref": {
+        "symbolic": "env:PAYMENTS_TOKEN"
+      },
+      "data_classification_touched": {
+        "candidate": null,
+        "source": "governance",
+        "value": null
+      },
+      "data_domain": {
+        "confirmed_by": null,
+        "insufficient_evidence": null,
+        "source": "enriched",
+        "value": null
+      },
+      "declared_authorisation": {
+        "source": "detected",
+        "value": "POST payments-core.internal"
+      },
+      "description": {
+        "confirmed_by": null,
+        "insufficient_evidence": null,
+        "source": "enriched",
+        "value": null
+      },
+      "effective_entitlement": {
+        "ref": null,
+        "resolved": null,
+        "source": "external"
+      },
+      "evidence": [
+        "src/tools/pay.ts:1-8"
+      ],
+      "external_target": "payments-core.internal",
+      "is_sensitive": {
+        "evidence": [
+          "src/tools/pay.ts:1-8"
+        ],
+        "source": "derived",
+        "value": true
+      },
+      "kind": "function",
+      "location": "production",
+      "side_effects": [
+        "external_send"
+      ],
+      "signature": {
+        "params": [
+          "args"
+        ],
+        "returns": null
+      },
+      "tool_id": "sendPayment",
+      "tool_summary": {
+        "confirmed_by": null,
+        "insufficient_evidence": null,
+        "source": "enriched",
+        "value": null
+      }
+    }
+  ]
+}

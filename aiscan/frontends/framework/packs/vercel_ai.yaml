@@ -1,0 +1,34 @@
+# Vercel AI SDK rule pack (SPEC-4 W4). generateText/streamText WITH tools is an
+# agent (the SDK runs the tool loop internally); without tools it falls through
+# to the sink registry as a plain LLM call (the `tools` extract is required).
+framework: vercel-ai
+version: "0.1"
+rules:
+  - id: vercel_ai.generate_with_tools
+    match:
+      kind: call
+      callee_fqname:
+        - ai.generateText
+        - ai.streamText
+        - ai.generateObject
+        - ai.streamObject
+    extract:
+      name: {arg: __assign_target__, resolve: string}
+      model: {arg: model, resolve: model_ref}
+      instructions: {arg: system, resolve: prompt}
+      tools: {arg: tools, resolve: ref_list, required: true}
+    model_defaults: {api_style: openai, provider: vercel-ai}
+    emit:
+      - {fact: AgentDef, name: $name}
+      - {fact: BindModel, model: $model}
+      - {fact: BindPrompt, prompt: $instructions}
+      - {fact: BindComponents, items: $tools}
+
+  - id: vercel_ai.tool
+    match:
+      kind: call
+      callee_fqname: ai.tool
+    extract:
+      items: {arg: execute, resolve: ref_list}
+    emit:
+      - {fact: ToolFromRefs, items: $items}

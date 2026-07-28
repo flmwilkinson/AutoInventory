@@ -1,0 +1,60 @@
+{
+  "edges": [
+    {
+      "attrs": {},
+      "dst": "model:65b0799c4ff1",
+      "evidence": [
+        "review.py:16-23"
+      ],
+      "family": "ACDG",
+      "src": "usage:7e64737a136c",
+      "type": "uses_model"
+    }
+  ],
+  "nodes": [
+    {
+      "fact": {
+        "api_style": "openai",
+        "confidence": "high",
+        "deployment": "prod-gpt4",
+        "endpoint": "https://bankresource.openai.azure.com/openai/deployments/prod-gpt4/chat/completions?api-version=2024-06-01",
+        "evidence": [
+          "review.py:16-23"
+        ],
+        "id": "model:65b0799c4ff1",
+        "method": "attribution:external",
+        "model": {
+          "symbolic": "external:azure:deployment:prod-gpt4"
+        },
+        "provider": "azure-openai",
+        "source_files": [
+          "review.py"
+        ],
+        "task": "chat"
+      },
+      "fact_type": "ModelRefF",
+      "id": "model:65b0799c4ff1",
+      "type": "M"
+    },
+    {
+      "fact": {
+        "confidence": "high",
+        "evidence": [
+          "review.py:16-23"
+        ],
+        "id": "usage:7e64737a136c",
+        "in_agent": false,
+        "method": "sink:shape",
+        "model_id": "model:65b0799c4ff1",
+        "prompt_id": null,
+        "source_files": [
+          "review.py"
+        ],
+        "task": "chat"
+      },
+      "fact_type": "LLMCallSiteF",
+      "id": "usage:7e64737a136c",
+      "type": "L"
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+# LlamaIndex rule pack (SPEC §6.6). Matching is on resolved identity.
+# `FunctionAgent(llm=OpenAI(model=...), tools=[...], system_prompt=...)` and
+# `ReActAgent(...)` (workflow API), plus the older `ReActAgent.from_tools(...)`.
+# The LLM is a model-adapter instance (`OpenAI(model=...)`, `Anthropic(...)`),
+# resolved by the generic adapter path; the name is the assigned variable or the
+# explicit `name=` for multi-agent workflows.
+framework: llama-index
+version: "0.1"
+rules:
+  - id: llama_index.agent_ctor
+    match:
+      kind: call
+      callee_fqname:
+        - llama_index.core.agent.workflow.FunctionAgent
+        - llama_index.core.agent.workflow.ReActAgent
+        - llama_index.core.agent.workflow.CodeActAgent
+        - llama_index.core.agent.ReActAgent
+        - llama_index.core.agent.FunctionCallingAgent
+        - llama_index.core.agent.FunctionAgent
+    extract:
+      name: {arg: __assign_target__, resolve: string}
+      model: {arg: [llm, model, model_client], resolve: model_ref}
+      instructions: {arg: [system_prompt, instructions, system_message], resolve: prompt}
+      tools: {arg: [tools, functions], resolve: ref_list}
+    model_defaults: {api_style: openai}
+    emit:
+      - {fact: AgentDef, name: $name}
+      - {fact: BindModel, model: $model}
+      - {fact: BindPrompt, prompt: $instructions}
+      - {fact: BindComponents, items: $tools}
+
+  - id: llama_index.react_from_tools
+    match:
+      kind: call
+      callee_fqname:
+        - llama_index.core.agent.ReActAgent.from_tools
+        - llama_index.core.agent.react.base.ReActAgent.from_tools
+        - llama_index.agent.openai.OpenAIAgent.from_tools
+    extract:
+      name: {arg: __assign_target__, resolve: string}
+      model: {arg: llm, resolve: model_ref}
+      tools: {arg: 0, resolve: ref_list}
+    model_defaults: {api_style: openai}
+    emit:
+      - {fact: AgentDef, name: $name}
+      - {fact: BindModel, model: $model}
+      - {fact: BindComponents, items: $tools}
+
+  - id: llama_index.function_tool
+    match:
+      kind: call
+      callee_fqname:
+        - llama_index.core.tools.FunctionTool.from_defaults
+        - llama_index.core.tools.function_tool.FunctionTool.from_defaults
+    extract:
+      items: {arg: fn, resolve: ref_list}
+    emit:
+      - {fact: ToolFromRefs, items: $items}

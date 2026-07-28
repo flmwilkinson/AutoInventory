@@ -1,0 +1,254 @@
+{
+  "edges": [
+    {
+      "attrs": {},
+      "dst": "model:7a7e3e6e890b",
+      "evidence": [
+        "app/loop.py:57-88"
+      ],
+      "family": "ACDG",
+      "src": "agent:bespoke:run-agent",
+      "type": "bind_model"
+    },
+    {
+      "attrs": {},
+      "dst": "prompt:51a527df26eb",
+      "evidence": [
+        "app/loop.py:57-88"
+      ],
+      "family": "ACDG",
+      "src": "agent:bespoke:run-agent",
+      "type": "bind_prompt"
+    },
+    {
+      "attrs": {},
+      "dst": "state:4b0c24200e74",
+      "evidence": [
+        "app/loop.py:57-88"
+      ],
+      "family": "ACDG",
+      "src": "agent:bespoke:run-agent",
+      "type": "bind_state"
+    },
+    {
+      "attrs": {},
+      "dst": "tool:app.loop.lookup_account",
+      "evidence": [
+        "app/loop.py:57-88"
+      ],
+      "family": "ACDG",
+      "src": "agent:bespoke:run-agent",
+      "type": "bind_tool"
+    },
+    {
+      "attrs": {},
+      "dst": "tool:app.loop.send_payment",
+      "evidence": [
+        "app/loop.py:57-88"
+      ],
+      "family": "ACDG",
+      "src": "agent:bespoke:run-agent",
+      "type": "bind_tool"
+    },
+    {
+      "attrs": {},
+      "dst": "model:c55458c46049",
+      "evidence": [
+        "app/index.py:9-9"
+      ],
+      "family": "ACDG",
+      "src": "usage:222986f2c172",
+      "type": "uses_model"
+    }
+  ],
+  "nodes": [
+    {
+      "fact": {
+        "confidence": "high",
+        "entrypoint": false,
+        "evidence": [
+          "app/loop.py:57-88"
+        ],
+        "framework": null,
+        "id": "agent:bespoke:run-agent",
+        "kind": "bespoke",
+        "language": "python",
+        "location": "production",
+        "method": "bespoke:agent_shape[F1,F2,F3,F4,F5]",
+        "name": "run_agent",
+        "source_files": [
+          "app/loop.py"
+        ]
+      },
+      "fact_type": "AgentDefF",
+      "id": "agent:bespoke:run-agent",
+      "type": "A"
+    },
+    {
+      "fact": {
+        "api_style": "openai",
+        "confidence": "high",
+        "deployment": null,
+        "endpoint": "https://gw.internal.example/llm/v1/chat",
+        "evidence": [
+          "app/loop.py:64-73"
+        ],
+        "id": "model:7a7e3e6e890b",
+        "method": "attribution:literal",
+        "model": "internal-x1",
+        "provider": "org-gateway",
+        "source_files": [
+          "app/loop.py"
+        ],
+        "task": "chat"
+      },
+      "fact_type": "ModelRefF",
+      "id": "model:7a7e3e6e890b",
+      "type": "M"
+    },
+    {
+      "fact": {
+        "api_style": "openai",
+        "confidence": "high",
+        "deployment": null,
+        "endpoint": null,
+        "evidence": [
+          "app/index.py:9-9"
+        ],
+        "id": "model:c55458c46049",
+        "method": "attribution:literal",
+        "model": "text-embedding-3-small",
+        "provider": "openai",
+        "source_files": [
+          "app/index.py"
+        ],
+        "task": "embedding"
+      },
+      "fact_type": "ModelRefF",
+      "id": "model:c55458c46049",
+      "type": "M"
+    },
+    {
+      "fact": {
+        "confidence": "high",
+        "content": "You are the ops assistant for the payments desk.",
+        "content_hash": "51a527df26eb",
+        "dynamic": false,
+        "evidence": [
+          "app/loop.py:64-73"
+        ],
+        "file_ref": null,
+        "id": "prompt:51a527df26eb",
+        "method": "sink:first_system_message",
+        "origin": "literal",
+        "source_files": [
+          "app/loop.py"
+        ]
+      },
+      "fact_type": "PromptDefF",
+      "id": "prompt:51a527df26eb",
+      "type": "I"
+    },
+    {
+      "fact": {
+        "backing": null,
+        "confidence": "high",
+        "evidence": [
+          "app/loop.py:58-61"
+        ],
+        "id": "state:4b0c24200e74",
+        "kind": "messages",
+        "method": "bespoke:agent_shape[F1,F2,F3,F4,F5]",
+        "source_files": [
+          "app/loop.py"
+        ]
+      },
+      "fact_type": "StateDefF",
+      "id": "state:4b0c24200e74",
+      "type": "S"
+    },
+    {
+      "fact": {
+        "auth_verb": null,
+        "confidence": "high",
+        "credential_ref": null,
+        "evidence": [
+          "app/loop.py:38-41"
+        ],
+        "external_target": null,
+        "id": "tool:app.loop.lookup_account",
+        "kind": "function",
+        "method": "bespoke:agent_shape[F1,F2,F3,F4,F5]",
+        "name": "lookup_account",
+        "side_effects": [
+          "read"
+        ],
+        "signature": {
+          "params": [
+            "account_id"
+          ],
+          "returns": null
+        },
+        "source_files": [
+          "app/loop.py"
+        ]
+      },
+      "fact_type": "ToolDefF",
+      "id": "tool:app.loop.lookup_account",
+      "type": "C"
+    },
+    {
+      "fact": {
+        "auth_verb": "POST",
+        "confidence": "high",
+        "credential_ref": {
+          "symbolic": "env:PAYMENTS_TOKEN"
+        },
+        "evidence": [
+          "app/loop.py:44-51"
+        ],
+        "external_target": "payments-core.internal",
+        "id": "tool:app.loop.send_payment",
+        "kind": "function",
+        "method": "bespoke:agent_shape[F1,F2,F3,F4,F5]",
+        "name": "send_payment",
+        "side_effects": [
+          "external_send"
+        ],
+        "signature": {
+          "params": [
+            "account_id",
+            "amount"
+          ],
+          "returns": null
+        },
+        "source_files": [
+          "app/loop.py"
+        ]
+      },
+      "fact_type": "ToolDefF",
+      "id": "tool:app.loop.send_payment",
+      "type": "C"
+    },
+    {
+      "fact": {
+        "confidence": "high",
+        "evidence": [
+          "app/index.py:9-9"
+        ],
+        "id": "usage:222986f2c172",
+        "in_agent": false,
+        "method": "sink:sdk",
+        "model_id": "model:c55458c46049",
+        "prompt_id": null,
+        "source_files": [
+          "app/index.py"
+        ],
+        "task": "embedding"
+      },
+      "fact_type": "LLMCallSiteF",
+      "id": "usage:222986f2c172",
+      "type": "L"
+    }
+  ]
+}

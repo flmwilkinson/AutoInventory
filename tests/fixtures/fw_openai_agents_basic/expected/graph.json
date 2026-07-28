@@ -1,0 +1,287 @@
+{
+  "edges": [
+    {
+      "attrs": {},
+      "dst": "mcp:docs",
+      "evidence": [
+        "main.py:14-21",
+        "main.py:30-36"
+      ],
+      "family": "ACDG",
+      "src": "policy:1253581b145c",
+      "type": "attach_policy"
+    },
+    {
+      "attrs": {},
+      "dst": "mcp:docs",
+      "evidence": [
+        "main.py:30-36"
+      ],
+      "family": "ACDG",
+      "src": "agent:framework:triage-agent",
+      "type": "bind_mcp"
+    },
+    {
+      "attrs": {},
+      "dst": "model:71585868a217",
+      "evidence": [
+        "main.py:23-28"
+      ],
+      "family": "ACDG",
+      "src": "agent:framework:billing-agent",
+      "type": "bind_model"
+    },
+    {
+      "attrs": {},
+      "dst": "model:66e2518d7372",
+      "evidence": [
+        "main.py:30-36"
+      ],
+      "family": "ACDG",
+      "src": "agent:framework:triage-agent",
+      "type": "bind_model"
+    },
+    {
+      "attrs": {},
+      "dst": "prompt:ab01d3972d31",
+      "evidence": [
+        "main.py:23-28"
+      ],
+      "family": "ACDG",
+      "src": "agent:framework:billing-agent",
+      "type": "bind_prompt"
+    },
+    {
+      "attrs": {},
+      "dst": "prompt:dbfa689a8aa5",
+      "evidence": [
+        "main.py:30-36"
+      ],
+      "family": "ACDG",
+      "src": "agent:framework:triage-agent",
+      "type": "bind_prompt"
+    },
+    {
+      "attrs": {},
+      "dst": "tool:main.get_billing",
+      "evidence": [
+        "main.py:23-28"
+      ],
+      "family": "ACDG",
+      "src": "agent:framework:billing-agent",
+      "type": "bind_tool"
+    },
+    {
+      "attrs": {},
+      "dst": "agent:framework:billing-agent",
+      "evidence": [
+        "main.py:30-36"
+      ],
+      "family": "ACFG",
+      "src": "agent:framework:triage-agent",
+      "type": "transfer:handoff"
+    }
+  ],
+  "nodes": [
+    {
+      "fact": {
+        "confidence": "high",
+        "entrypoint": false,
+        "evidence": [
+          "main.py:23-28"
+        ],
+        "framework": "openai-agents",
+        "id": "agent:framework:billing-agent",
+        "kind": "framework",
+        "language": "python",
+        "location": "production",
+        "method": "openai_agents.agent_ctor",
+        "name": "Billing Agent",
+        "source_files": [
+          "main.py"
+        ]
+      },
+      "fact_type": "AgentDefF",
+      "id": "agent:framework:billing-agent",
+      "type": "A"
+    },
+    {
+      "fact": {
+        "confidence": "high",
+        "entrypoint": true,
+        "evidence": [
+          "main.py:30-36"
+        ],
+        "framework": "openai-agents",
+        "id": "agent:framework:triage-agent",
+        "kind": "framework",
+        "language": "python",
+        "location": "production",
+        "method": "openai_agents.agent_ctor",
+        "name": "Triage Agent",
+        "source_files": [
+          "main.py"
+        ]
+      },
+      "fact_type": "AgentDefF",
+      "id": "agent:framework:triage-agent",
+      "type": "A"
+    },
+    {
+      "fact": {
+        "approval_policy": "always",
+        "confidence": "high",
+        "declared_tools": "dynamic",
+        "evidence": [
+          "main.py:14-21",
+          "main.py:30-36"
+        ],
+        "id": "mcp:docs",
+        "method": "openai_agents.agent_ctor+openai_agents.hosted_mcp",
+        "server": "https://mcp.docs.example.com/sse",
+        "source_files": [
+          "main.py"
+        ],
+        "transport": "sse"
+      },
+      "fact_type": "MCPDefF",
+      "id": "mcp:docs",
+      "type": "C"
+    },
+    {
+      "fact": {
+        "api_style": "openai",
+        "confidence": "high",
+        "deployment": null,
+        "endpoint": null,
+        "evidence": [
+          "main.py:30-36"
+        ],
+        "id": "model:66e2518d7372",
+        "method": "attribution:literal",
+        "model": "gpt-4o",
+        "provider": "openai",
+        "source_files": [
+          "main.py"
+        ],
+        "task": "chat"
+      },
+      "fact_type": "ModelRefF",
+      "id": "model:66e2518d7372",
+      "type": "M"
+    },
+    {
+      "fact": {
+        "api_style": "openai",
+        "confidence": "high",
+        "deployment": null,
+        "endpoint": null,
+        "evidence": [
+          "main.py:23-28"
+        ],
+        "id": "model:71585868a217",
+        "method": "attribution:literal",
+        "model": "gpt-4o-mini",
+        "provider": "openai",
+        "source_files": [
+          "main.py"
+        ],
+        "task": "chat"
+      },
+      "fact_type": "ModelRefF",
+      "id": "model:71585868a217",
+      "type": "M"
+    },
+    {
+      "fact": {
+        "confidence": "high",
+        "evidence": [
+          "main.py:14-21",
+          "main.py:30-36"
+        ],
+        "id": "policy:1253581b145c",
+        "kind": "approval",
+        "method": "openai_agents.agent_ctor+openai_agents.hosted_mcp",
+        "params": "always",
+        "source_files": [
+          "main.py"
+        ]
+      },
+      "fact_type": "PolicyDefF",
+      "id": "policy:1253581b145c",
+      "type": "G"
+    },
+    {
+      "fact": {
+        "confidence": "high",
+        "content": "You handle billing questions for retail customers.",
+        "content_hash": "ab01d3972d31",
+        "dynamic": false,
+        "evidence": [
+          "main.py:23-28"
+        ],
+        "file_ref": null,
+        "id": "prompt:ab01d3972d31",
+        "method": "openai_agents.agent_ctor",
+        "origin": "literal",
+        "source_files": [
+          "main.py"
+        ]
+      },
+      "fact_type": "PromptDefF",
+      "id": "prompt:ab01d3972d31",
+      "type": "I"
+    },
+    {
+      "fact": {
+        "confidence": "high",
+        "content": "Route the customer to the right specialist.",
+        "content_hash": "dbfa689a8aa5",
+        "dynamic": false,
+        "evidence": [
+          "main.py:30-36"
+        ],
+        "file_ref": null,
+        "id": "prompt:dbfa689a8aa5",
+        "method": "openai_agents.agent_ctor",
+        "origin": "literal",
+        "source_files": [
+          "main.py"
+        ]
+      },
+      "fact_type": "PromptDefF",
+      "id": "prompt:dbfa689a8aa5",
+      "type": "I"
+    },
+    {
+      "fact": {
+        "auth_verb": null,
+        "confidence": "high",
+        "credential_ref": null,
+        "evidence": [
+          "main.py:8-11"
+        ],
+        "external_target": null,
+        "id": "tool:main.get_billing",
+        "kind": "function",
+        "method": "openai_agents.agent_ctor+openai_agents.function_tool",
+        "name": "get_billing",
+        "side_effects": [
+          "read"
+        ],
+        "signature": {
+          "params": [
+            "account_id"
+          ],
+          "returns": null
+        },
+        "source_files": [
+          "main.py"
+        ]
+      },
+      "fact_type": "ToolDefF",
+      "id": "tool:main.get_billing",
+      "type": "C"
+    }
+  ]
+}

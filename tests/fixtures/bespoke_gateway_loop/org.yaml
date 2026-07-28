@@ -1,0 +1,4 @@
+gateway_hosts: []
+known_wrapper_packages: []
+sensitive_hosts:
+  - payments-core.internal

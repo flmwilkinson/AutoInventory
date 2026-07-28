@@ -1,0 +1,197 @@
+# SDK sink signatures (SPEC §6.5a). Matching is on RESOLVED identity:
+# `root` matches the chain_root base value (class fq / package fq / module),
+# `chains` match the remaining attribute path.
+#
+# Fields:
+#   roots: base identities this entry covers
+#   chains: attr paths that are sink calls on that root
+#   api_style / provider: attribution metadata
+#   model_arg: call kwarg (or payload key) holding the model
+#   model_ctor_arg / model_ctor_kwargs: model captured at constructor instead
+#   system_arg: explicit system-prompt kwarg (anthropic style)
+#   messages_arg: messages kwarg (first role=system message binds the prompt)
+#   ctor_endpoint_kwargs: ctor kwargs that set a custom endpoint
+#   call_endpoint_kwargs: call-site kwargs that set a custom endpoint
+#   task_by_chain: overrides the default "chat" task per chain
+
+- roots: [openai.OpenAI, openai.AsyncOpenAI, openai.AzureOpenAI, openai.AsyncAzureOpenAI]
+  chains:
+    [
+      chat.completions.create,
+      responses.create,
+      completions.create,
+      embeddings.create,
+      audio.transcriptions.create,
+      audio.speech.create,
+      audio.speech.with_streaming_response.create,
+    ]
+  api_style: openai
+  provider: openai
+  model_arg: model
+  messages_arg: messages
+  ctor_endpoint_kwargs: [base_url, azure_endpoint]
+  task_by_chain:
+    completions.create: completion
+    embeddings.create: embedding
+    audio.transcriptions.create: stt
+    audio.speech.create: tts
+    audio.speech.with_streaming_response.create: tts
+
+- roots: [langchain_openai.ChatOpenAI, langchain_openai.AzureChatOpenAI]
+  chains: [invoke, ainvoke, stream, astream, batch]
+  api_style: openai
+  provider: openai
+  model_ctor_kwargs: [model, model_name]
+  ctor_endpoint_kwargs: [base_url, api_base, azure_endpoint]
+
+- roots: [langchain_anthropic.ChatAnthropic]
+  chains: [invoke, ainvoke, stream, astream, batch]
+  api_style: anthropic
+  provider: anthropic
+  model_ctor_kwargs: [model, model_name]
+  ctor_endpoint_kwargs: [base_url]
+
+- roots: [langchain.chat_models.init_chat_model]
+  chains: [invoke, ainvoke, stream, astream, batch]
+  api_style: unknown
+  provider: null
+  model_ctor_arg: 0
+  model_ctor_kwargs: [model]
+  ctor_endpoint_kwargs: [base_url]
+
+- roots: [anthropic.Anthropic, anthropic.AsyncAnthropic]
+  chains: [messages.create, messages.stream]
+  api_style: anthropic
+  provider: anthropic
+  model_arg: model
+  system_arg: system
+  messages_arg: messages
+  ctor_endpoint_kwargs: [base_url]
+
+- roots: [litellm]
+  chains: [completion, acompletion, embedding]
+  api_style: openai
+  provider: litellm
+  model_arg: model
+  messages_arg: messages
+  call_endpoint_kwargs: [base_url, api_base]
+  task_by_chain:
+    embedding: embedding
+
+- roots: [boto3.bedrock-runtime-client]
+  chains: [invoke_model, converse]
+  api_style: bedrock
+  provider: aws-bedrock
+  model_arg: modelId
+  messages_arg: messages
+
+- roots: [google.genai.Client]
+  chains: [models.generate_content]
+  api_style: vertex
+  provider: google
+  model_arg: model
+
+- roots: [google.generativeai.GenerativeModel]
+  chains: [generate_content, generate_content_async]
+  api_style: vertex
+  provider: google
+  model_ctor_arg: 0
+  model_ctor_kwargs: [model_name]
+
+- roots: [mistralai.Mistral]
+  chains: [chat.complete, chat.stream]
+  api_style: openai
+  provider: mistral
+  model_arg: model
+  messages_arg: messages
+
+- roots: [groq.Groq, groq.AsyncGroq]
+  chains: [chat.completions.create]
+  api_style: openai
+  provider: groq
+  model_arg: model
+  messages_arg: messages
+
+- roots: [cohere.ClientV2, cohere.Client]
+  chains: [chat]
+  api_style: openai
+  provider: cohere
+  model_arg: model
+  messages_arg: messages
+
+- roots: [together.Together]
+  chains: [chat.completions.create]
+  api_style: openai
+  provider: together
+  model_arg: model
+  messages_arg: messages
+
+# ---- SPEC-4: TypeScript/JavaScript SDK roots ----
+# Identity is dot-joined "<specifier>.<export>" (W1). Default import binds
+# `.default`; named imports bind their name.
+
+- roots: [openai.default, openai.OpenAI, openai.AzureOpenAI]
+  chains:
+    [
+      chat.completions.create,
+      responses.create,
+      completions.create,
+      embeddings.create,
+      audio.transcriptions.create,
+      audio.speech.create,
+    ]
+  api_style: openai
+  provider: openai
+  model_arg: model
+  messages_arg: messages
+  ctor_endpoint_kwargs: [baseURL, endpoint, azure_endpoint]
+  task_by_chain:
+    completions.create: completion
+    embeddings.create: embedding
+    audio.transcriptions.create: stt
+    audio.speech.create: tts
+
+- roots: ["@anthropic-ai/sdk.default", "@anthropic-ai/sdk.Anthropic"]
+  chains: [messages.create, messages.stream]
+  api_style: anthropic
+  provider: anthropic
+  model_arg: model
+  system_arg: system
+  messages_arg: messages
+  ctor_endpoint_kwargs: [baseURL]
+
+- roots: ["@azure/openai.OpenAIClient"]
+  chains: [getChatCompletions, getCompletions, getEmbeddings, streamChatCompletions]
+  api_style: openai
+  provider: azure
+  model_ctor_arg: 0
+  ctor_endpoint_kwargs: [endpoint]
+  task_by_chain:
+    getEmbeddings: embedding
+
+- roots: ["@aws-sdk/client-bedrock-runtime.BedrockRuntimeClient"]
+  chains: [send]
+  api_style: bedrock
+  provider: aws-bedrock
+
+- roots: ["@google/generative-ai.GoogleGenerativeAI"]
+  chains: [getGenerativeModel]
+  api_style: vertex
+  provider: google
+  model_ctor_kwargs: [model]
+
+- roots: ["@mistralai/mistralai.Mistral", "@mistralai/mistralai.default"]
+  chains: [chat.complete, chat.stream]
+  api_style: openai
+  provider: mistral
+  model_arg: model
+  messages_arg: messages
+
+# Vercel AI SDK — directly-imported functions: `import { generateText } from 'ai'`.
+# Identity is `ai.<fn>` with an empty call-chain (the function IS the callee).
+- roots: [ai.generateText, ai.streamText, ai.generateObject, ai.streamObject]
+  chains: [""]
+  api_style: openai
+  provider: vercel-ai
+  model_arg: model
+  messages_arg: messages

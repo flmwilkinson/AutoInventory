@@ -1,0 +1,714 @@
+{
+  "agents": [
+    {
+      "agent_id": "triage-ticket",
+      "agent_summary": {
+        "confirmed_by": null,
+        "insufficient_evidence": null,
+        "source": "enriched",
+        "value": null
+      },
+      "autonomy_level": {
+        "evidence": [
+          "app.py:29-46"
+        ],
+        "source": "derived",
+        "value": "autonomous"
+      },
+      "capability_flags": {
+        "evidence": [
+          "app.py:11-14",
+          "app.py:17-23"
+        ],
+        "source": "derived",
+        "value": {
+          "executes_code": true,
+          "moves_money": false,
+          "mutates_identities": false,
+          "reads_sensitive": false,
+          "sends_external": true
+        }
+      },
+      "control_policies": [],
+      "description": {
+        "confirmed_by": null,
+        "insufficient_evidence": null,
+        "source": "enriched",
+        "value": null
+      },
+      "detection": {
+        "confidence": "high",
+        "evidence": [
+          "app.py:29-46"
+        ],
+        "method": "bespoke:agent_shape[F1,F2,F3,F4,F5]"
+      },
+      "guardrails_summary": {
+        "confirmed_by": null,
+        "insufficient_evidence": null,
+        "source": "enriched",
+        "value": null
+      },
+      "handoffs": [],
+      "language": "python",
+      "location": "production",
+      "mcp_servers": [],
+      "model": {
+        "api_style": "openai",
+        "deployment": null,
+        "endpoint": "https://llm.bank.internal/v1/chat/completions",
+        "method": "attribution:wrapper_default",
+        "source": "detected",
+        "value": "bank-small-1"
+      },
+      "reachable_tools": {
+        "evidence": [
+          "app.py:29-46"
+        ],
+        "source": "derived",
+        "value": [
+          "open_ticket",
+          "restart_host"
+        ]
+      },
+      "responsibilities": {
+        "confirmed_by": null,
+        "insufficient_evidence": null,
+        "source": "enriched",
+        "value": null
+      },
+      "role_class": {
+        "evidence": [
+          "app.py:29-46"
+        ],
+        "source": "derived",
+        "value": "solo"
+      },
+      "routes": [],
+      "state": [
+        {
+          "evidence": [
+            "app.py:31-34"
+          ],
+          "kind": "messages"
+        }
+      ],
+      "system_prompt": {
+        "dynamic": false,
+        "evidence": [
+          "app.py:36-36"
+        ],
+        "file_ref": null,
+        "origin": "literal",
+        "value": "You triage IT support tickets."
+      },
+      "tools": [
+        "open_ticket",
+        "restart_host"
+      ]
+    }
+  ],
+  "ai_commit_range": null,
+  "ai_dependencies": [
+    {
+      "ecosystem": "python",
+      "evidence": [],
+      "package": "legacy_ai",
+      "source": null,
+      "used": true,
+      "version": null
+    }
+  ],
+  "ai_verdict": "ai_detected",
+  "approval_date": {
+    "candidate": null,
+    "source": "governance",
+    "value": null
+  },
+  "approval_status": {
+    "candidate": null,
+    "source": "governance",
+    "value": null
+  },
+  "approver": {
+    "candidate": null,
+    "source": "governance",
+    "value": null
+  },
+  "bundle_id": "repo:repo",
+  "capability_summary": {
+    "confirmed_by": null,
+    "insufficient_evidence": null,
+    "source": "enriched",
+    "value": null
+  },
+  "cmdb_app_id": {
+    "ref": null,
+    "resolved": null,
+    "source": "external"
+  },
+  "contributor_candidates": [],
+  "data_classification": {
+    "candidate": null,
+    "source": "governance",
+    "value": null
+  },
+  "data_interaction_summary": {
+    "confirmed_by": null,
+    "insufficient_evidence": null,
+    "source": "enriched",
+    "value": null
+  },
+  "derived": {
+    "agent_count": {
+      "evidence": [],
+      "source": "derived",
+      "value": 1
+    },
+    "agents_by_language": {
+      "evidence": [],
+      "source": "derived",
+      "value": {
+        "python": 1
+      }
+    },
+    "agents_by_location": {
+      "evidence": [],
+      "source": "derived",
+      "value": {
+        "example": 0,
+        "production": 1,
+        "test": 0
+      }
+    },
+    "autonomy_profile": {
+      "evidence": [],
+      "source": "derived",
+      "value": "autonomous"
+    },
+    "bespoke_agent_count": {
+      "evidence": [],
+      "source": "derived",
+      "value": 1
+    },
+    "capability_flags": {
+      "evidence": [
+        "app.py:11-14",
+        "app.py:17-23"
+      ],
+      "source": "derived",
+      "value": {
+        "executes_code": true,
+        "moves_money": false,
+        "mutates_identities": false,
+        "reads_sensitive": false,
+        "sends_external": true
+      }
+    },
+    "data_signals": {
+      "evidence": [],
+      "source": "derived",
+      "value": [
+        "touches org-flagged sensitive host itsm.internal.example"
+      ]
+    },
+    "external_systems": {
+      "evidence": [],
+      "source": "derived",
+      "value": [
+        "itsm.internal.example"
+      ]
+    },
+    "framework_agent_count": {
+      "evidence": [],
+      "source": "derived",
+      "value": 0
+    },
+    "has_dynamic_prompts": {
+      "evidence": [],
+      "source": "derived",
+      "value": false
+    },
+    "has_unapproved_endpoint": {
+      "evidence": [],
+      "source": "derived",
+      "value": false
+    },
+    "has_unresolved_models": {
+      "evidence": [
+        "batch.py:18-18"
+      ],
+      "source": "derived",
+      "value": true
+    },
+    "mcp_count": {
+      "evidence": [],
+      "source": "derived",
+      "value": 0
+    },
+    "model_count": {
+      "evidence": [],
+      "source": "derived",
+      "value": 3
+    },
+    "models_used": {
+      "evidence": [],
+      "source": "derived",
+      "value": [
+        {
+          "api_style": "openai",
+          "display": "bank-small-1",
+          "endpoint": "https://llm.bank.internal/v1/chat/completions",
+          "locations": [
+            "production"
+          ],
+          "model": "bank-small-1",
+          "provider_class": "internal_gateway",
+          "qualifiers": [],
+          "task": "chat"
+        },
+        {
+          "api_style": "unknown",
+          "display": "legacy-1",
+          "endpoint": null,
+          "locations": [
+            "production"
+          ],
+          "model": "legacy-1",
+          "provider_class": "vendor_external",
+          "qualifiers": [],
+          "task": "chat"
+        },
+        {
+          "api_style": "unknown",
+          "display": "not determined",
+          "endpoint": "https://llm.bank.internal/api/ask",
+          "locations": [
+            "production"
+          ],
+          "model": {
+            "unresolved": "unbound"
+          },
+          "provider_class": "internal_gateway",
+          "qualifiers": [
+            "unbound"
+          ],
+          "task": "chat"
+        }
+      ]
+    },
+    "system_type": {
+      "evidence": [],
+      "source": "derived",
+      "value": {
+        "components": [],
+        "value": "agentic"
+      }
+    },
+    "tool_count": {
+      "evidence": [],
+      "source": "derived",
+      "value": 2
+    },
+    "tools_by_location": {
+      "evidence": [],
+      "source": "derived",
+      "value": {
+        "example": 0,
+        "production": 2,
+        "test": 0
+      }
+    },
+    "usage_groups": {
+      "evidence": [],
+      "source": "derived",
+      "value": [
+        {
+          "call_sites": 1,
+          "file": "batch.py",
+          "in_agent": false,
+          "model": "not determined",
+          "task": "chat"
+        },
+        {
+          "call_sites": 1,
+          "file": "reporting.py",
+          "in_agent": false,
+          "model": "legacy-1",
+          "task": "chat"
+        }
+      ]
+    }
+  },
+  "description": {
+    "confirmed_by": null,
+    "insufficient_evidence": null,
+    "source": "enriched",
+    "value": null
+  },
+  "env_defaults": {},
+  "findings": [
+    {
+      "detail": "agent capability flags: executes_code",
+      "evidence": [
+        "app.py:29-46"
+      ],
+      "kind": "high_privilege_agent",
+      "severity": "high",
+      "subject_ref": "agent:triage-ticket"
+    },
+    {
+      "detail": "LLM call site outside any detected agent",
+      "evidence": [
+        "batch.py:18-18"
+      ],
+      "kind": "orphan_model_usage",
+      "severity": "info",
+      "subject_ref": "model_usage"
+    },
+    {
+      "detail": "LLM call site outside any detected agent",
+      "evidence": [
+        "reporting.py:12-12"
+      ],
+      "kind": "orphan_model_usage",
+      "severity": "info",
+      "subject_ref": "model_usage"
+    },
+    {
+      "detail": "call-site model could not be resolved statically",
+      "evidence": [
+        "batch.py:18-18"
+      ],
+      "kind": "unresolved_model",
+      "severity": "medium",
+      "subject_ref": "model_usage"
+    }
+  ],
+  "human_oversight_summary": {
+    "confirmed_by": null,
+    "insufficient_evidence": null,
+    "source": "enriched",
+    "value": null
+  },
+  "inventory_provenance": {
+    "detection_basis": "static/declared",
+    "enrichment_model": null,
+    "org_pack": "org.yaml",
+    "rulepacks": {
+      "autogen": "0.1",
+      "config-files": "0.1",
+      "crewai": "0.1",
+      "langgraph": "0.1",
+      "langgraph-js": "0.1",
+      "llama-index": "0.1",
+      "openai-agents": "0.1",
+      "openai-agents-js": "0.1",
+      "pydantic-ai": "0.1",
+      "semantic-kernel": "0.1",
+      "vercel-ai": "0.1"
+    },
+    "scanned_at": "<normalized>",
+    "scanner": "aiscan 0.1.0"
+  },
+  "last_review": {
+    "candidate": null,
+    "source": "governance",
+    "value": null
+  },
+  "lifecycle_status": {
+    "candidate": null,
+    "source": "governance",
+    "value": null
+  },
+  "mcp_servers": [],
+  "model_usages": [
+    {
+      "endpoint": "https://llm.bank.internal/api/ask",
+      "evidence": [
+        "batch.py:18-18"
+      ],
+      "in_agent": false,
+      "model": {
+        "confidence": "high",
+        "evidence": [
+          "batch.py:18-18"
+        ],
+        "method": "attribution:unresolved",
+        "source": "detected",
+        "value": {
+          "unresolved": "unbound"
+        }
+      },
+      "model_approved": {
+        "candidate": null,
+        "source": "governance",
+        "value": null
+      },
+      "model_purpose": {
+        "confirmed_by": null,
+        "insufficient_evidence": null,
+        "source": "enriched",
+        "value": null
+      },
+      "provider_class": {
+        "evidence": [
+          "batch.py:18-18"
+        ],
+        "source": "derived",
+        "value": "internal_gateway"
+      },
+      "task": "chat"
+    },
+    {
+      "endpoint": null,
+      "evidence": [
+        "reporting.py:12-12"
+      ],
+      "in_agent": false,
+      "model": {
+        "confidence": "high",
+        "evidence": [
+          "reporting.py:12-12"
+        ],
+        "method": "attribution:literal",
+        "source": "detected",
+        "value": "legacy-1"
+      },
+      "model_approved": {
+        "candidate": null,
+        "source": "governance",
+        "value": null
+      },
+      "model_purpose": {
+        "confirmed_by": null,
+        "insufficient_evidence": null,
+        "source": "enriched",
+        "value": null
+      },
+      "provider_class": {
+        "evidence": [
+          "reporting.py:12-12"
+        ],
+        "source": "derived",
+        "value": "vendor_external"
+      },
+      "task": "chat"
+    }
+  ],
+  "name": "repo",
+  "next_review": {
+    "candidate": null,
+    "source": "governance",
+    "value": null
+  },
+  "no_ai_detected": false,
+  "owner": {
+    "candidate": null,
+    "source": "governance",
+    "value": null
+  },
+  "purpose": {
+    "candidate": null,
+    "source": "governance",
+    "value": null
+  },
+  "regulatory_scope": {
+    "candidate": null,
+    "source": "governance",
+    "value": null
+  },
+  "repo_url": null,
+  "risk_tier": {
+    "candidate": null,
+    "source": "governance",
+    "value": null
+  },
+  "scan_health": {
+    "adjudication": null,
+    "declared_agents": [],
+    "enrichment": null,
+    "files": 5,
+    "findings": 4,
+    "language_files": {
+      ".py": 5
+    },
+    "loc": 107,
+    "parse_errors": [],
+    "resolver": {
+      "memo_hits": 353,
+      "queries": 131,
+      "timeouts": 0,
+      "top": {
+        "dynamic": 9,
+        "unbound": 5
+      }
+    },
+    "sinks": {
+      "host": 1,
+      "shape": 1,
+      "wrapper": 2
+    },
+    "stage_ms": {},
+    "triage": {
+      "chat_path_fragment": [
+        "bank_ai/client.py:/chat/completions"
+      ],
+      "llm_host": [
+        "bank_ai/client.py:llm.bank.internal",
+        "batch.py:llm.bank.internal"
+      ],
+      "model_near_messages": [
+        "bank_ai/client.py"
+      ],
+      "org_wrapper_import": [
+        "reporting.py:legacy_ai"
+      ]
+    },
+    "unpromoted_candidates": 0,
+    "wrapper_classifications": 2
+  },
+  "scanned_commit": "unversioned",
+  "suggested_aia_risk_category": {
+    "confirmed_by": null,
+    "insufficient_evidence": null,
+    "source": "enriched",
+    "value": null
+  },
+  "system_summary": {
+    "confirmed_by": null,
+    "insufficient_evidence": null,
+    "source": "enriched",
+    "value": null
+  },
+  "tools": [
+    {
+      "capability_class": {
+        "confirmed_by": null,
+        "insufficient_evidence": null,
+        "source": "enriched",
+        "value": null
+      },
+      "credential_ref": null,
+      "data_classification_touched": {
+        "candidate": null,
+        "source": "governance",
+        "value": null
+      },
+      "data_domain": {
+        "confirmed_by": null,
+        "insufficient_evidence": null,
+        "source": "enriched",
+        "value": null
+      },
+      "declared_authorisation": {
+        "source": "detected",
+        "value": "POST itsm.internal.example"
+      },
+      "description": {
+        "confirmed_by": null,
+        "insufficient_evidence": null,
+        "source": "enriched",
+        "value": null
+      },
+      "effective_entitlement": {
+        "ref": null,
+        "resolved": null,
+        "source": "external"
+      },
+      "evidence": [
+        "app.py:17-23"
+      ],
+      "external_target": "itsm.internal.example",
+      "is_sensitive": {
+        "evidence": [
+          "app.py:17-23"
+        ],
+        "source": "derived",
+        "value": true
+      },
+      "kind": "function",
+      "location": "production",
+      "side_effects": [
+        "external_send"
+      ],
+      "signature": {
+        "params": [
+          "summary"
+        ],
+        "returns": null
+      },
+      "tool_id": "open_ticket",
+      "tool_summary": {
+        "confirmed_by": null,
+        "insufficient_evidence": null,
+        "source": "enriched",
+        "value": null
+      }
+    },
+    {
+      "capability_class": {
+        "confirmed_by": null,
+        "insufficient_evidence": null,
+        "source": "enriched",
+        "value": null
+      },
+      "credential_ref": null,
+      "data_classification_touched": {
+        "candidate": null,
+        "source": "governance",
+        "value": null
+      },
+      "data_domain": {
+        "confirmed_by": null,
+        "insufficient_evidence": null,
+        "source": "enriched",
+        "value": null
+      },
+      "declared_authorisation": {
+        "source": "detected",
+        "value": null
+      },
+      "description": {
+        "confirmed_by": null,
+        "insufficient_evidence": null,
+        "source": "enriched",
+        "value": null
+      },
+      "effective_entitlement": {
+        "ref": null,
+        "resolved": null,
+        "source": "external"
+      },
+      "evidence": [
+        "app.py:11-14"
+      ],
+      "external_target": null,
+      "is_sensitive": {
+        "evidence": [
+          "app.py:11-14"
+        ],
+        "source": "derived",
+        "value": true
+      },
+      "kind": "function",
+      "location": "production",
+      "side_effects": [
+        "code_exec"
+      ],
+      "signature": {
+        "params": [
+          "hostname"
+        ],
+        "returns": null
+      },
+      "tool_id": "restart_host",
+      "tool_summary": {
+        "confirmed_by": null,
+        "insufficient_evidence": null,
+        "source": "enriched",
+        "value": null
+      }
+    }
+  ]
+}

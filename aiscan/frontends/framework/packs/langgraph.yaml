@@ -1,0 +1,87 @@
+# LangChain/LangGraph rule pack (SPEC §6.6). Matching is on resolved identity.
+# StateGraph nodes are AgentCandidates — promoted to agents only when their
+# node function contains an LLM sink (plain graph nodes are not agents).
+framework: langgraph
+version: "0.1"
+rules:
+  - id: langgraph.create_react_agent
+    match:
+      kind: call
+      callee_fqname:
+        - langgraph.prebuilt.create_react_agent
+        - langgraph.prebuilt.chat_agent_executor.create_react_agent
+    extract:
+      name: {arg: __assign_target__, resolve: string}
+      model: {arg: 0, resolve: model_ref}
+      tools: {arg: tools, resolve: ref_list}
+    emit:
+      - {fact: AgentDef, name: $name}
+      - {fact: BindModel, model: $model}
+      - {fact: BindComponents, items: $tools}
+
+  - id: langgraph.add_node
+    match:
+      kind: call
+      callee_fqname: langgraph.graph.StateGraph.add_node
+    extract:
+      name: {arg: 0, resolve: string, required: true}
+      fn: {arg: 1, resolve: raw, required: true}
+    emit:
+      - {fact: AgentCandidate, name: $name, fn: $fn}
+
+  - id: langgraph.add_node_callable
+    match:
+      kind: call
+      callee_fqname: langgraph.graph.StateGraph.add_node
+    extract:
+      fn: {arg: 0, resolve: raw, required: true}
+    emit:
+      - {fact: AgentCandidate, fn: $fn}  # name inferred from the function
+
+  - id: langgraph.add_edge
+    match:
+      kind: call
+      callee_fqname: langgraph.graph.StateGraph.add_edge
+    extract:
+      from: {arg: 0, resolve: string}
+      to: {arg: 1, resolve: string}
+    emit:
+      - {fact: RouteEdge, from: $from, to: $to}
+
+  - id: langgraph.add_conditional_edges
+    match:
+      kind: call
+      callee_fqname: langgraph.graph.StateGraph.add_conditional_edges
+    extract:
+      source: {arg: 0, resolve: string}
+      guard: {arg: 1, resolve: raw}
+      mapping: {arg: 2, resolve: raw}
+    emit:
+      - {fact: CondRouteEdges, source: $source, guard: $guard, mapping: $mapping}
+
+  - id: langgraph.tool_decorator
+    match:
+      kind: decorator
+      callee_fqname: [langchain_core.tools.tool, langchain.tools.tool]
+    emit:
+      - {fact: ToolFromDef}
+
+  - id: langgraph.structured_tool
+    match:
+      kind: call
+      callee_fqname:
+        - langchain_core.tools.StructuredTool.from_function
+        - langchain_core.tools.Tool
+    extract:
+      items: {arg: func, resolve: ref_list}
+    emit:
+      - {fact: ToolFromRefs, items: $items}
+
+  - id: langgraph.checkpointer
+    match:
+      kind: call
+      callee_fqname:
+        - langgraph.checkpoint.memory.MemorySaver
+        - langgraph.store.memory.InMemoryStore
+    emit:
+      - {fact: StateFromCall, kind: session}

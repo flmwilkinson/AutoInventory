@@ -1,0 +1,11 @@
+{
+  "name": "docgen-mini",
+  "private": true,
+  "dependencies": {
+    "openai": "^4.28.0",
+    "react": "^18.2.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}

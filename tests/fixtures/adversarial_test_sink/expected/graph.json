@@ -1,0 +1,90 @@
+{
+  "edges": [
+    {
+      "attrs": {},
+      "dst": "model:b1d27360e625",
+      "evidence": [
+        "tests/test_client.py:7-13"
+      ],
+      "family": "ACDG",
+      "src": "usage:099b6827d8a7",
+      "type": "uses_model"
+    },
+    {
+      "attrs": {},
+      "dst": "model:b1d27360e625",
+      "evidence": [
+        "tool.py:11-17"
+      ],
+      "family": "ACDG",
+      "src": "usage:ac377e893603",
+      "type": "uses_model"
+    }
+  ],
+  "nodes": [
+    {
+      "fact": {
+        "api_style": "openai",
+        "confidence": "high",
+        "deployment": null,
+        "endpoint": "https://api.openai.com/v1/chat/completions",
+        "evidence": [
+          "tests/test_client.py:7-13",
+          "tool.py:11-17"
+        ],
+        "id": "model:b1d27360e625",
+        "method": "attribution:literal",
+        "model": "gpt-4o-mini",
+        "provider": "openai",
+        "source_files": [
+          "tests/test_client.py",
+          "tool.py"
+        ],
+        "task": "chat"
+      },
+      "fact_type": "ModelRefF",
+      "id": "model:b1d27360e625",
+      "type": "M"
+    },
+    {
+      "fact": {
+        "confidence": "medium",
+        "evidence": [
+          "tests/test_client.py:7-13"
+        ],
+        "id": "usage:099b6827d8a7",
+        "in_agent": false,
+        "method": "sink:shape",
+        "model_id": "model:b1d27360e625",
+        "prompt_id": null,
+        "source_files": [
+          "tests/test_client.py"
+        ],
+        "task": "chat"
+      },
+      "fact_type": "LLMCallSiteF",
+      "id": "usage:099b6827d8a7",
+      "type": "L"
+    },
+    {
+      "fact": {
+        "confidence": "high",
+        "evidence": [
+          "tool.py:11-17"
+        ],
+        "id": "usage:ac377e893603",
+        "in_agent": false,
+        "method": "sink:shape",
+        "model_id": "model:b1d27360e625",
+        "prompt_id": null,
+        "source_files": [
+          "tool.py"
+        ],
+        "task": "chat"
+      },
+      "fact_type": "LLMCallSiteF",
+      "id": "usage:ac377e893603",
+      "type": "L"
+    }
+  ]
+}

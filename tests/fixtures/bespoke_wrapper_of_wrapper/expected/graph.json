@@ -1,0 +1,92 @@
+{
+  "edges": [
+    {
+      "attrs": {},
+      "dst": "model:5a13d00c4bd1",
+      "evidence": [
+        "main.py:7-7"
+      ],
+      "family": "ACDG",
+      "src": "usage:70ce3ba08464",
+      "type": "uses_model"
+    },
+    {
+      "attrs": {},
+      "dst": "prompt:b52c45a0d1bb",
+      "evidence": [
+        "main.py:7-7"
+      ],
+      "family": "ACDG",
+      "src": "usage:70ce3ba08464",
+      "type": "uses_prompt"
+    }
+  ],
+  "nodes": [
+    {
+      "fact": {
+        "api_style": "openai",
+        "confidence": "high",
+        "deployment": null,
+        "endpoint": "https://llm.bank.internal/v1/chat/completions",
+        "evidence": [
+          "main.py:7-7"
+        ],
+        "id": "model:5a13d00c4bd1",
+        "method": "attribution:wrapper_default",
+        "model": "bank-small-1",
+        "provider": null,
+        "source_files": [
+          "main.py"
+        ],
+        "task": "chat"
+      },
+      "fact_type": "ModelRefF",
+      "id": "model:5a13d00c4bd1",
+      "type": "M"
+    },
+    {
+      "fact": {
+        "confidence": "medium",
+        "content": {
+          "dynamic": true,
+          "template": "Summarise the day: {notes}"
+        },
+        "content_hash": "b52c45a0d1bb",
+        "dynamic": true,
+        "evidence": [
+          "main.py:7-7"
+        ],
+        "file_ref": null,
+        "id": "prompt:b52c45a0d1bb",
+        "method": "wrapper:prompt_arg",
+        "origin": "literal",
+        "source_files": [
+          "main.py"
+        ]
+      },
+      "fact_type": "PromptDefF",
+      "id": "prompt:b52c45a0d1bb",
+      "type": "I"
+    },
+    {
+      "fact": {
+        "confidence": "high",
+        "evidence": [
+          "main.py:7-7"
+        ],
+        "id": "usage:70ce3ba08464",
+        "in_agent": false,
+        "method": "sink:wrapper",
+        "model_id": "model:5a13d00c4bd1",
+        "prompt_id": "prompt:b52c45a0d1bb",
+        "source_files": [
+          "main.py"
+        ],
+        "task": "chat"
+      },
+      "fact_type": "LLMCallSiteF",
+      "id": "usage:70ce3ba08464",
+      "type": "L"
+    }
+  ]
+}

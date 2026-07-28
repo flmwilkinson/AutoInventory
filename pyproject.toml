@@ -1,0 +1,71 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aiscan"
+version = "0.1.0"
+description = "Bank-grade AI/agent inventory scanner - static analysis of LLM/agent usage in Python repositories"
+requires-python = ">=3.12"
+dependencies = [
+    "pydantic>=2.7",
+    "pyyaml>=6.0",
+    "typer>=0.12",
+    # SPEC-4 §2: TypeScript/JavaScript parser backend. Pinned exactly —
+    # grammar upgrades can shift spans (and therefore goldens), so they are
+    # deliberate, blessed events (see DECISIONS).
+    "tree-sitter==0.26.0",
+    "tree-sitter-typescript==0.23.2",
+    "tree-sitter-javascript==0.25.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "mypy>=1.10",
+    "ruff>=0.5",
+    "types-PyYAML",
+]
+# Note: the optional --adjudicate tier talks to an OpenAI-compatible endpoint
+# over stdlib HTTP, so it needs no extra dependency — only OPENAI_API_KEY (and
+# optionally a base URL) in the environment or ./.env.
+
+[project.scripts]
+aiscan = "aiscan.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["aiscan*"]
+
+[tool.setuptools.package-data]
+aiscan = ["**/*.yaml"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["tests/fixtures", "aiscan-out", "aiscan-out-tmp", ".venv"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "RUF"]
+ignore = [
+    "SIM108",  # ternary rewrites can hurt readability in lowering code
+]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unreachable = true
+files = ["aiscan", "tests"]
+exclude = "tests/fixtures"
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_decorators = false
+
+[[tool.mypy.overrides]]
+module = "anthropic"
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+norecursedirs = ["fixtures"]
+addopts = "-q"

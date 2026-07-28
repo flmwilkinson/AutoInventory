@@ -1,0 +1,58 @@
+{
+  "edges": [
+    {
+      "attrs": {},
+      "dst": "model:71585868a217",
+      "evidence": [
+        "client.py:11-14"
+      ],
+      "family": "ACDG",
+      "src": "usage:34fe5cd27aff",
+      "type": "uses_model"
+    }
+  ],
+  "nodes": [
+    {
+      "fact": {
+        "api_style": "openai",
+        "confidence": "high",
+        "deployment": null,
+        "endpoint": null,
+        "evidence": [
+          "client.py:11-14"
+        ],
+        "id": "model:71585868a217",
+        "method": "attribution:literal",
+        "model": "gpt-4o-mini",
+        "provider": "openai",
+        "source_files": [
+          "client.py"
+        ],
+        "task": "chat"
+      },
+      "fact_type": "ModelRefF",
+      "id": "model:71585868a217",
+      "type": "M"
+    },
+    {
+      "fact": {
+        "confidence": "high",
+        "evidence": [
+          "client.py:11-14"
+        ],
+        "id": "usage:34fe5cd27aff",
+        "in_agent": false,
+        "method": "sink:sdk",
+        "model_id": "model:71585868a217",
+        "prompt_id": null,
+        "source_files": [
+          "client.py"
+        ],
+        "task": "chat"
+      },
+      "fact_type": "LLMCallSiteF",
+      "id": "usage:34fe5cd27aff",
+      "type": "L"
+    }
+  ]
+}

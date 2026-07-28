@@ -1,0 +1,56 @@
+# CrewAI rule pack (SPEC §6.6). Agent name = role; the system prompt is
+# constructed from goal + backstory; Crew(process=sequential) chains transfers
+# in task order.
+framework: crewai
+version: "0.1"
+rules:
+  - id: crewai.agent_ctor
+    match:
+      kind: call
+      callee_fqname: crewai.Agent
+    extract:
+      name: {arg: role, resolve: string, required: true}
+      model: {arg: llm, resolve: model_ref}
+      goal: {arg: goal, resolve: string}
+      backstory: {arg: backstory, resolve: string}
+      tools: {arg: tools, resolve: ref_list}
+    model_defaults: {api_style: openai}
+    emit:
+      - {fact: AgentDef, name: $name}
+      - {fact: BindModel, model: $model}
+      - {fact: BindPromptConstructed, goal: $goal, backstory: $backstory}
+      - {fact: BindComponents, items: $tools}
+
+  - id: crewai.task_ctor
+    match:
+      kind: call
+      callee_fqname: crewai.Task
+    extract:
+      agent: {arg: agent, resolve: ref}
+      tools: {arg: tools, resolve: ref_list}
+    emit:
+      - {fact: TaskBind, agent: $agent, tools: $tools}
+
+  - id: crewai.crew_ctor
+    match:
+      kind: call
+      callee_fqname: crewai.Crew
+    extract:
+      tasks: {arg: tasks, resolve: raw}
+      process: {arg: process, resolve: raw}
+    emit:
+      - {fact: CrewTransfers, tasks: $tasks, process: $process}
+
+  - id: crewai.tool_decorator
+    match:
+      kind: decorator
+      callee_fqname: [crewai.tools.tool, crewai_tools.tool]
+    emit:
+      - {fact: ToolFromDef}
+
+  - id: crewai.base_tool_subclass
+    match:
+      kind: class_base
+      base_fqname: [crewai.tools.BaseTool, crewai_tools.BaseTool]
+    emit:
+      - {fact: ToolFromClass}

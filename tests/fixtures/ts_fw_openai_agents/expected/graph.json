@@ -1,0 +1,165 @@
+{
+  "edges": [
+    {
+      "attrs": {},
+      "dst": "model:66e2518d7372",
+      "evidence": [
+        "src/app.ts:3-7"
+      ],
+      "family": "ACDG",
+      "src": "agent:framework:spanish-agent",
+      "type": "bind_model"
+    },
+    {
+      "attrs": {},
+      "dst": "model:66e2518d7372",
+      "evidence": [
+        "src/app.ts:9-14"
+      ],
+      "family": "ACDG",
+      "src": "agent:framework:triage-agent",
+      "type": "bind_model"
+    },
+    {
+      "attrs": {},
+      "dst": "prompt:aef622f9d261",
+      "evidence": [
+        "src/app.ts:3-7"
+      ],
+      "family": "ACDG",
+      "src": "agent:framework:spanish-agent",
+      "type": "bind_prompt"
+    },
+    {
+      "attrs": {},
+      "dst": "prompt:740be3bce70b",
+      "evidence": [
+        "src/app.ts:9-14"
+      ],
+      "family": "ACDG",
+      "src": "agent:framework:triage-agent",
+      "type": "bind_prompt"
+    },
+    {
+      "attrs": {},
+      "dst": "agent:framework:spanish-agent",
+      "evidence": [
+        "src/app.ts:9-14"
+      ],
+      "family": "ACFG",
+      "src": "agent:framework:triage-agent",
+      "type": "transfer:handoff"
+    }
+  ],
+  "nodes": [
+    {
+      "fact": {
+        "confidence": "high",
+        "entrypoint": false,
+        "evidence": [
+          "src/app.ts:3-7"
+        ],
+        "framework": "openai-agents-js",
+        "id": "agent:framework:spanish-agent",
+        "kind": "framework",
+        "language": "typescript",
+        "location": "production",
+        "method": "openai_agents_js.agent_ctor",
+        "name": "Spanish agent",
+        "source_files": [
+          "src/app.ts"
+        ]
+      },
+      "fact_type": "AgentDefF",
+      "id": "agent:framework:spanish-agent",
+      "type": "A"
+    },
+    {
+      "fact": {
+        "confidence": "high",
+        "entrypoint": false,
+        "evidence": [
+          "src/app.ts:9-14"
+        ],
+        "framework": "openai-agents-js",
+        "id": "agent:framework:triage-agent",
+        "kind": "framework",
+        "language": "typescript",
+        "location": "production",
+        "method": "openai_agents_js.agent_ctor",
+        "name": "Triage agent",
+        "source_files": [
+          "src/app.ts"
+        ]
+      },
+      "fact_type": "AgentDefF",
+      "id": "agent:framework:triage-agent",
+      "type": "A"
+    },
+    {
+      "fact": {
+        "api_style": "openai",
+        "confidence": "high",
+        "deployment": null,
+        "endpoint": null,
+        "evidence": [
+          "src/app.ts:3-7",
+          "src/app.ts:9-14"
+        ],
+        "id": "model:66e2518d7372",
+        "method": "attribution:literal",
+        "model": "gpt-4o",
+        "provider": "openai",
+        "source_files": [
+          "src/app.ts"
+        ],
+        "task": "chat"
+      },
+      "fact_type": "ModelRefF",
+      "id": "model:66e2518d7372",
+      "type": "M"
+    },
+    {
+      "fact": {
+        "confidence": "high",
+        "content": "Route the request to the right specialist.",
+        "content_hash": "740be3bce70b",
+        "dynamic": false,
+        "evidence": [
+          "src/app.ts:9-14"
+        ],
+        "file_ref": null,
+        "id": "prompt:740be3bce70b",
+        "method": "openai_agents_js.agent_ctor",
+        "origin": "literal",
+        "source_files": [
+          "src/app.ts"
+        ]
+      },
+      "fact_type": "PromptDefF",
+      "id": "prompt:740be3bce70b",
+      "type": "I"
+    },
+    {
+      "fact": {
+        "confidence": "high",
+        "content": "You only respond in Spanish.",
+        "content_hash": "aef622f9d261",
+        "dynamic": false,
+        "evidence": [
+          "src/app.ts:3-7"
+        ],
+        "file_ref": null,
+        "id": "prompt:aef622f9d261",
+        "method": "openai_agents_js.agent_ctor",
+        "origin": "literal",
+        "source_files": [
+          "src/app.ts"
+        ]
+      },
+      "fact_type": "PromptDefF",
+      "id": "prompt:aef622f9d261",
+      "type": "I"
+    }
+  ]
+}

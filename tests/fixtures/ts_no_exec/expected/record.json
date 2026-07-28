@@ -1,0 +1,360 @@
+{
+  "agents": [],
+  "ai_commit_range": null,
+  "ai_dependencies": [
+    {
+      "ecosystem": "npm",
+      "evidence": [
+        "package.json"
+      ],
+      "package": "openai",
+      "source": "package.json",
+      "used": true,
+      "version": null
+    }
+  ],
+  "ai_verdict": "ai_detected",
+  "approval_date": {
+    "candidate": null,
+    "source": "governance",
+    "value": null
+  },
+  "approval_status": {
+    "candidate": null,
+    "source": "governance",
+    "value": null
+  },
+  "approver": {
+    "candidate": null,
+    "source": "governance",
+    "value": null
+  },
+  "bundle_id": "repo:repo",
+  "capability_summary": {
+    "confirmed_by": null,
+    "insufficient_evidence": null,
+    "source": "enriched",
+    "value": null
+  },
+  "cmdb_app_id": {
+    "ref": null,
+    "resolved": null,
+    "source": "external"
+  },
+  "contributor_candidates": [],
+  "data_classification": {
+    "candidate": null,
+    "source": "governance",
+    "value": null
+  },
+  "data_interaction_summary": {
+    "confirmed_by": null,
+    "insufficient_evidence": null,
+    "source": "enriched",
+    "value": null
+  },
+  "derived": {
+    "agent_count": {
+      "evidence": [],
+      "source": "derived",
+      "value": 0
+    },
+    "agents_by_language": {
+      "evidence": [],
+      "source": "derived",
+      "value": {}
+    },
+    "agents_by_location": {
+      "evidence": [],
+      "source": "derived",
+      "value": {
+        "example": 0,
+        "production": 0,
+        "test": 0
+      }
+    },
+    "autonomy_profile": {
+      "evidence": [],
+      "source": "derived",
+      "value": null
+    },
+    "bespoke_agent_count": {
+      "evidence": [],
+      "source": "derived",
+      "value": 0
+    },
+    "capability_flags": {
+      "evidence": [],
+      "source": "derived",
+      "value": {
+        "executes_code": false,
+        "moves_money": false,
+        "mutates_identities": false,
+        "reads_sensitive": false,
+        "sends_external": false
+      }
+    },
+    "data_signals": {
+      "evidence": [],
+      "source": "derived",
+      "value": []
+    },
+    "external_systems": {
+      "evidence": [],
+      "source": "derived",
+      "value": []
+    },
+    "framework_agent_count": {
+      "evidence": [],
+      "source": "derived",
+      "value": 0
+    },
+    "has_dynamic_prompts": {
+      "evidence": [],
+      "source": "derived",
+      "value": false
+    },
+    "has_unapproved_endpoint": {
+      "evidence": [],
+      "source": "derived",
+      "value": false
+    },
+    "has_unresolved_models": {
+      "evidence": [],
+      "source": "derived",
+      "value": false
+    },
+    "mcp_count": {
+      "evidence": [],
+      "source": "derived",
+      "value": 0
+    },
+    "model_count": {
+      "evidence": [],
+      "source": "derived",
+      "value": 1
+    },
+    "models_used": {
+      "evidence": [],
+      "source": "derived",
+      "value": [
+        {
+          "api_style": "unknown",
+          "display": "gpt-4o",
+          "endpoint": null,
+          "locations": [
+            "production"
+          ],
+          "model": "gpt-4o",
+          "provider_class": "vendor_external",
+          "qualifiers": [],
+          "task": "chat"
+        }
+      ]
+    },
+    "system_type": {
+      "evidence": [],
+      "source": "derived",
+      "value": {
+        "components": [],
+        "value": "genai"
+      }
+    },
+    "tool_count": {
+      "evidence": [],
+      "source": "derived",
+      "value": 0
+    },
+    "tools_by_location": {
+      "evidence": [],
+      "source": "derived",
+      "value": {
+        "example": 0,
+        "production": 0,
+        "test": 0
+      }
+    },
+    "usage_groups": {
+      "evidence": [],
+      "source": "derived",
+      "value": [
+        {
+          "call_sites": 1,
+          "file": "evil.ts",
+          "in_agent": false,
+          "model": "gpt-4o",
+          "task": "chat"
+        }
+      ]
+    }
+  },
+  "description": {
+    "confirmed_by": null,
+    "insufficient_evidence": null,
+    "source": "enriched",
+    "value": null
+  },
+  "env_defaults": {},
+  "findings": [
+    {
+      "detail": "LLM call site outside any detected agent",
+      "evidence": [
+        "evil.ts:12-15"
+      ],
+      "kind": "orphan_model_usage",
+      "severity": "info",
+      "subject_ref": "model_usage"
+    }
+  ],
+  "human_oversight_summary": {
+    "confirmed_by": null,
+    "insufficient_evidence": null,
+    "source": "enriched",
+    "value": null
+  },
+  "inventory_provenance": {
+    "detection_basis": "static/declared",
+    "enrichment_model": null,
+    "org_pack": null,
+    "rulepacks": {
+      "autogen": "0.1",
+      "config-files": "0.1",
+      "crewai": "0.1",
+      "langgraph": "0.1",
+      "langgraph-js": "0.1",
+      "llama-index": "0.1",
+      "openai-agents": "0.1",
+      "openai-agents-js": "0.1",
+      "pydantic-ai": "0.1",
+      "semantic-kernel": "0.1",
+      "vercel-ai": "0.1"
+    },
+    "scanned_at": "<normalized>",
+    "scanner": "aiscan 0.1.0"
+  },
+  "last_review": {
+    "candidate": null,
+    "source": "governance",
+    "value": null
+  },
+  "lifecycle_status": {
+    "candidate": null,
+    "source": "governance",
+    "value": null
+  },
+  "mcp_servers": [],
+  "model_usages": [
+    {
+      "endpoint": null,
+      "evidence": [
+        "evil.ts:12-15"
+      ],
+      "in_agent": false,
+      "model": {
+        "confidence": "high",
+        "evidence": [
+          "evil.ts:12-15"
+        ],
+        "method": "attribution:literal",
+        "source": "detected",
+        "value": "gpt-4o"
+      },
+      "model_approved": {
+        "candidate": null,
+        "source": "governance",
+        "value": null
+      },
+      "model_purpose": {
+        "confirmed_by": null,
+        "insufficient_evidence": null,
+        "source": "enriched",
+        "value": null
+      },
+      "provider_class": {
+        "evidence": [
+          "evil.ts:12-15"
+        ],
+        "source": "derived",
+        "value": "vendor_external"
+      },
+      "task": "chat"
+    }
+  ],
+  "name": "repo",
+  "next_review": {
+    "candidate": null,
+    "source": "governance",
+    "value": null
+  },
+  "no_ai_detected": false,
+  "owner": {
+    "candidate": null,
+    "source": "governance",
+    "value": null
+  },
+  "purpose": {
+    "candidate": null,
+    "source": "governance",
+    "value": null
+  },
+  "regulatory_scope": {
+    "candidate": null,
+    "source": "governance",
+    "value": null
+  },
+  "repo_url": null,
+  "risk_tier": {
+    "candidate": null,
+    "source": "governance",
+    "value": null
+  },
+  "scan_health": {
+    "adjudication": null,
+    "declared_agents": [],
+    "enrichment": null,
+    "files": 1,
+    "findings": 1,
+    "language_files": {
+      ".ts": 1
+    },
+    "loc": 22,
+    "parse_errors": [],
+    "resolver": {
+      "memo_hits": 14,
+      "queries": 15,
+      "timeouts": 0,
+      "top": {
+        "dynamic": 1,
+        "opaque": 1
+      }
+    },
+    "sinks": {
+      "sdk": 1
+    },
+    "stage_ms": {},
+    "triage": {
+      "manifest_ai_package_js": [
+        "package.json:openai"
+      ],
+      "sdk_import": [
+        "evil.ts:openai"
+      ]
+    },
+    "unpromoted_candidates": 0,
+    "wrapper_classifications": 0
+  },
+  "scanned_commit": "unversioned",
+  "suggested_aia_risk_category": {
+    "confirmed_by": null,
+    "insufficient_evidence": null,
+    "source": "enriched",
+    "value": null
+  },
+  "system_summary": {
+    "confirmed_by": null,
+    "insufficient_evidence": null,
+    "source": "enriched",
+    "value": null
+  },
+  "tools": []
+}

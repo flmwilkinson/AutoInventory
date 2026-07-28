@@ -1,0 +1,6 @@
+gateway_hosts:
+  - gw.internal.example
+sensitive_hosts:
+  - payments-core.internal
+payment_hosts:
+  - payments-core.internal

@@ -1,0 +1,2 @@
+crewai==0.86.0
+requests==2.32.3

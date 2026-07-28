@@ -1,0 +1,29 @@
+# Secrets — never commit the adjudication credentials
+.env
+.env.*
+!.env.example
+
+# Scan outputs (artifacts, cloned repos, org registries, adjudication/enrichment caches)
+aiscan-out/
+aiscan-out-tmp/
+aiscan-fleet/
+org_registry.json
+*enrichment_cache.json
+*adjudication_cache.json
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+build/
+dist/
+
+# Tooling caches
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+
+# OS / editor
+.DS_Store
+Thumbs.db

@@ -1,0 +1,424 @@
+{
+  "agents": [],
+  "ai_commit_range": null,
+  "ai_dependencies": [],
+  "ai_verdict": "ai_detected",
+  "approval_date": {
+    "candidate": null,
+    "source": "governance",
+    "value": null
+  },
+  "approval_status": {
+    "candidate": null,
+    "source": "governance",
+    "value": null
+  },
+  "approver": {
+    "candidate": null,
+    "source": "governance",
+    "value": null
+  },
+  "bundle_id": "repo:repo",
+  "capability_summary": {
+    "confirmed_by": null,
+    "insufficient_evidence": null,
+    "source": "enriched",
+    "value": null
+  },
+  "cmdb_app_id": {
+    "ref": null,
+    "resolved": null,
+    "source": "external"
+  },
+  "contributor_candidates": [],
+  "data_classification": {
+    "candidate": null,
+    "source": "governance",
+    "value": null
+  },
+  "data_interaction_summary": {
+    "confirmed_by": null,
+    "insufficient_evidence": null,
+    "source": "enriched",
+    "value": null
+  },
+  "derived": {
+    "agent_count": {
+      "evidence": [],
+      "source": "derived",
+      "value": 0
+    },
+    "agents_by_language": {
+      "evidence": [],
+      "source": "derived",
+      "value": {}
+    },
+    "agents_by_location": {
+      "evidence": [],
+      "source": "derived",
+      "value": {
+        "example": 0,
+        "production": 0,
+        "test": 0
+      }
+    },
+    "autonomy_profile": {
+      "evidence": [],
+      "source": "derived",
+      "value": null
+    },
+    "bespoke_agent_count": {
+      "evidence": [],
+      "source": "derived",
+      "value": 0
+    },
+    "capability_flags": {
+      "evidence": [],
+      "source": "derived",
+      "value": {
+        "executes_code": false,
+        "moves_money": false,
+        "mutates_identities": false,
+        "reads_sensitive": false,
+        "sends_external": false
+      }
+    },
+    "data_signals": {
+      "evidence": [],
+      "source": "derived",
+      "value": []
+    },
+    "external_systems": {
+      "evidence": [],
+      "source": "derived",
+      "value": []
+    },
+    "framework_agent_count": {
+      "evidence": [],
+      "source": "derived",
+      "value": 0
+    },
+    "has_dynamic_prompts": {
+      "evidence": [],
+      "source": "derived",
+      "value": false
+    },
+    "has_unapproved_endpoint": {
+      "evidence": [],
+      "source": "derived",
+      "value": false
+    },
+    "has_unresolved_models": {
+      "evidence": [],
+      "source": "derived",
+      "value": false
+    },
+    "mcp_count": {
+      "evidence": [],
+      "source": "derived",
+      "value": 0
+    },
+    "model_count": {
+      "evidence": [],
+      "source": "derived",
+      "value": 1
+    },
+    "models_used": {
+      "evidence": [],
+      "source": "derived",
+      "value": [
+        {
+          "api_style": "unknown",
+          "display": "gpt-4o-mini",
+          "endpoint": "https://api.openai.com/v1/chat/completions",
+          "locations": [
+            "production",
+            "test"
+          ],
+          "model": "gpt-4o-mini",
+          "provider_class": "vendor_external",
+          "qualifiers": [],
+          "task": "chat"
+        }
+      ]
+    },
+    "system_type": {
+      "evidence": [],
+      "source": "derived",
+      "value": {
+        "components": [],
+        "value": "genai"
+      }
+    },
+    "tool_count": {
+      "evidence": [],
+      "source": "derived",
+      "value": 0
+    },
+    "tools_by_location": {
+      "evidence": [],
+      "source": "derived",
+      "value": {
+        "example": 0,
+        "production": 0,
+        "test": 0
+      }
+    },
+    "usage_groups": {
+      "evidence": [],
+      "source": "derived",
+      "value": [
+        {
+          "call_sites": 1,
+          "file": "tests/test_client.py",
+          "in_agent": false,
+          "model": "gpt-4o-mini",
+          "task": "chat"
+        },
+        {
+          "call_sites": 1,
+          "file": "tool.py",
+          "in_agent": false,
+          "model": "gpt-4o-mini",
+          "task": "chat"
+        }
+      ]
+    }
+  },
+  "description": {
+    "confirmed_by": null,
+    "insufficient_evidence": null,
+    "source": "enriched",
+    "value": null
+  },
+  "env_defaults": {},
+  "findings": [
+    {
+      "detail": "tests",
+      "evidence": [
+        "tests/test_client.py:7-13"
+      ],
+      "kind": "llm_call_in_test_or_main",
+      "severity": "info",
+      "subject_ref": null
+    },
+    {
+      "detail": "__main__",
+      "evidence": [
+        "tool.py:11-17"
+      ],
+      "kind": "llm_call_in_test_or_main",
+      "severity": "info",
+      "subject_ref": null
+    },
+    {
+      "detail": "LLM call site outside any detected agent",
+      "evidence": [
+        "tests/test_client.py:7-13"
+      ],
+      "kind": "orphan_model_usage",
+      "severity": "info",
+      "subject_ref": "model_usage"
+    },
+    {
+      "detail": "LLM call site outside any detected agent",
+      "evidence": [
+        "tool.py:11-17"
+      ],
+      "kind": "orphan_model_usage",
+      "severity": "info",
+      "subject_ref": "model_usage"
+    }
+  ],
+  "human_oversight_summary": {
+    "confirmed_by": null,
+    "insufficient_evidence": null,
+    "source": "enriched",
+    "value": null
+  },
+  "inventory_provenance": {
+    "detection_basis": "static/declared",
+    "enrichment_model": null,
+    "org_pack": null,
+    "rulepacks": {
+      "autogen": "0.1",
+      "config-files": "0.1",
+      "crewai": "0.1",
+      "langgraph": "0.1",
+      "langgraph-js": "0.1",
+      "llama-index": "0.1",
+      "openai-agents": "0.1",
+      "openai-agents-js": "0.1",
+      "pydantic-ai": "0.1",
+      "semantic-kernel": "0.1",
+      "vercel-ai": "0.1"
+    },
+    "scanned_at": "<normalized>",
+    "scanner": "aiscan 0.1.0"
+  },
+  "last_review": {
+    "candidate": null,
+    "source": "governance",
+    "value": null
+  },
+  "lifecycle_status": {
+    "candidate": null,
+    "source": "governance",
+    "value": null
+  },
+  "mcp_servers": [],
+  "model_usages": [
+    {
+      "endpoint": "https://api.openai.com/v1/chat/completions",
+      "evidence": [
+        "tests/test_client.py:7-13"
+      ],
+      "in_agent": false,
+      "model": {
+        "confidence": "medium",
+        "evidence": [
+          "tests/test_client.py:7-13"
+        ],
+        "method": "attribution:literal",
+        "source": "detected",
+        "value": "gpt-4o-mini"
+      },
+      "model_approved": {
+        "candidate": null,
+        "source": "governance",
+        "value": null
+      },
+      "model_purpose": {
+        "confirmed_by": null,
+        "insufficient_evidence": null,
+        "source": "enriched",
+        "value": null
+      },
+      "provider_class": {
+        "evidence": [
+          "tests/test_client.py:7-13"
+        ],
+        "source": "derived",
+        "value": "vendor_external"
+      },
+      "task": "chat"
+    },
+    {
+      "endpoint": "https://api.openai.com/v1/chat/completions",
+      "evidence": [
+        "tool.py:11-17"
+      ],
+      "in_agent": false,
+      "model": {
+        "confidence": "high",
+        "evidence": [
+          "tool.py:11-17"
+        ],
+        "method": "attribution:literal",
+        "source": "detected",
+        "value": "gpt-4o-mini"
+      },
+      "model_approved": {
+        "candidate": null,
+        "source": "governance",
+        "value": null
+      },
+      "model_purpose": {
+        "confirmed_by": null,
+        "insufficient_evidence": null,
+        "source": "enriched",
+        "value": null
+      },
+      "provider_class": {
+        "evidence": [
+          "tool.py:11-17"
+        ],
+        "source": "derived",
+        "value": "vendor_external"
+      },
+      "task": "chat"
+    }
+  ],
+  "name": "repo",
+  "next_review": {
+    "candidate": null,
+    "source": "governance",
+    "value": null
+  },
+  "no_ai_detected": false,
+  "owner": {
+    "candidate": null,
+    "source": "governance",
+    "value": null
+  },
+  "purpose": {
+    "candidate": null,
+    "source": "governance",
+    "value": null
+  },
+  "regulatory_scope": {
+    "candidate": null,
+    "source": "governance",
+    "value": null
+  },
+  "repo_url": null,
+  "risk_tier": {
+    "candidate": null,
+    "source": "governance",
+    "value": null
+  },
+  "scan_health": {
+    "adjudication": null,
+    "declared_agents": [],
+    "enrichment": null,
+    "files": 2,
+    "findings": 4,
+    "language_files": {
+      ".py": 2
+    },
+    "loc": 32,
+    "parse_errors": [],
+    "resolver": {
+      "memo_hits": 8,
+      "queries": 14,
+      "timeouts": 0,
+      "top": {
+        "unbound": 1
+      }
+    },
+    "sinks": {
+      "shape": 2
+    },
+    "stage_ms": {},
+    "triage": {
+      "chat_path_fragment": [
+        "tests/test_client.py:/chat/completions",
+        "tool.py:/chat/completions"
+      ],
+      "llm_host": [
+        "tests/test_client.py:api.openai.com",
+        "tool.py:api.openai.com"
+      ],
+      "model_near_messages": [
+        "tests/test_client.py",
+        "tool.py"
+      ]
+    },
+    "unpromoted_candidates": 0,
+    "wrapper_classifications": 0
+  },
+  "scanned_commit": "unversioned",
+  "suggested_aia_risk_category": {
+    "confirmed_by": null,
+    "insufficient_evidence": null,
+    "source": "enriched",
+    "value": null
+  },
+  "system_summary": {
+    "confirmed_by": null,
+    "insufficient_evidence": null,
+    "source": "enriched",
+    "value": null
+  },
+  "tools": []
+}

@@ -1,0 +1,100 @@
+{
+  "edges": [
+    {
+      "attrs": {},
+      "dst": "model:c58bcf0fb047",
+      "evidence": [
+        "agent.py:18-18"
+      ],
+      "family": "ACDG",
+      "src": "agent:framework:agent",
+      "type": "bind_model"
+    },
+    {
+      "attrs": {},
+      "dst": "tool:agent.search_kb",
+      "evidence": [
+        "agent.py:18-18"
+      ],
+      "family": "ACDG",
+      "src": "agent:framework:agent",
+      "type": "bind_tool"
+    }
+  ],
+  "nodes": [
+    {
+      "fact": {
+        "confidence": "high",
+        "entrypoint": false,
+        "evidence": [
+          "agent.py:18-18"
+        ],
+        "framework": "langgraph",
+        "id": "agent:framework:agent",
+        "kind": "framework",
+        "language": "python",
+        "location": "production",
+        "method": "langgraph.create_react_agent",
+        "name": "agent",
+        "source_files": [
+          "agent.py"
+        ]
+      },
+      "fact_type": "AgentDefF",
+      "id": "agent:framework:agent",
+      "type": "A"
+    },
+    {
+      "fact": {
+        "api_style": "openai",
+        "confidence": "high",
+        "deployment": null,
+        "endpoint": "https://gw.internal.example/v1",
+        "evidence": [
+          "agent.py:18-18"
+        ],
+        "id": "model:c58bcf0fb047",
+        "method": "attribution:constant",
+        "model": "bank-gpt4",
+        "provider": "openai",
+        "source_files": [
+          "agent.py"
+        ],
+        "task": "chat"
+      },
+      "fact_type": "ModelRefF",
+      "id": "model:c58bcf0fb047",
+      "type": "M"
+    },
+    {
+      "fact": {
+        "auth_verb": null,
+        "confidence": "high",
+        "credential_ref": null,
+        "evidence": [
+          "agent.py:10-13"
+        ],
+        "external_target": null,
+        "id": "tool:agent.search_kb",
+        "kind": "function",
+        "method": "langgraph.create_react_agent+langgraph.tool_decorator",
+        "name": "search_kb",
+        "side_effects": [
+          "read"
+        ],
+        "signature": {
+          "params": [
+            "query"
+          ],
+          "returns": null
+        },
+        "source_files": [
+          "agent.py"
+        ]
+      },
+      "fact_type": "ToolDefF",
+      "id": "tool:agent.search_kb",
+      "type": "C"
+    }
+  ]
+}

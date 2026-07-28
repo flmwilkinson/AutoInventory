@@ -1,0 +1,15 @@
+# Provider host registry (SPEC §6.5c). Exact hosts and * wildcards.
+# Org-pack gateway_hosts extend this set at scan time.
+hosts:
+  api.openai.com: openai
+  api.anthropic.com: anthropic
+  generativelanguage.googleapis.com: google
+  api.mistral.ai: mistral
+  api.groq.com: groq
+  api.together.xyz: together
+  openrouter.ai: openrouter
+  api.cohere.com: cohere
+wildcards:
+  "*.openai.azure.com": azure-openai
+  "bedrock-runtime.*.amazonaws.com": aws-bedrock
+  "*-aiplatform.googleapis.com": google-vertex

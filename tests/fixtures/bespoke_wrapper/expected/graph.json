@@ -1,0 +1,305 @@
+{
+  "edges": [
+    {
+      "attrs": {},
+      "dst": "model:5a13d00c4bd1",
+      "evidence": [
+        "app.py:29-46"
+      ],
+      "family": "ACDG",
+      "src": "agent:bespoke:triage-ticket",
+      "type": "bind_model"
+    },
+    {
+      "attrs": {},
+      "dst": "prompt:82f86e65df4a",
+      "evidence": [
+        "app.py:29-46"
+      ],
+      "family": "ACDG",
+      "src": "agent:bespoke:triage-ticket",
+      "type": "bind_prompt"
+    },
+    {
+      "attrs": {},
+      "dst": "state:197fb0a25c75",
+      "evidence": [
+        "app.py:29-46"
+      ],
+      "family": "ACDG",
+      "src": "agent:bespoke:triage-ticket",
+      "type": "bind_state"
+    },
+    {
+      "attrs": {},
+      "dst": "tool:app.open_ticket",
+      "evidence": [
+        "app.py:29-46"
+      ],
+      "family": "ACDG",
+      "src": "agent:bespoke:triage-ticket",
+      "type": "bind_tool"
+    },
+    {
+      "attrs": {},
+      "dst": "tool:app.restart_host",
+      "evidence": [
+        "app.py:29-46"
+      ],
+      "family": "ACDG",
+      "src": "agent:bespoke:triage-ticket",
+      "type": "bind_tool"
+    },
+    {
+      "attrs": {},
+      "dst": "model:16ce67b1e991",
+      "evidence": [
+        "reporting.py:12-12"
+      ],
+      "family": "ACDG",
+      "src": "usage:c37aca80d525",
+      "type": "uses_model"
+    },
+    {
+      "attrs": {},
+      "dst": "model:383c1ebb59f3",
+      "evidence": [
+        "batch.py:18-18"
+      ],
+      "family": "ACDG",
+      "src": "usage:d0172f9cc2b2",
+      "type": "uses_model"
+    }
+  ],
+  "nodes": [
+    {
+      "fact": {
+        "confidence": "high",
+        "entrypoint": false,
+        "evidence": [
+          "app.py:29-46"
+        ],
+        "framework": null,
+        "id": "agent:bespoke:triage-ticket",
+        "kind": "bespoke",
+        "language": "python",
+        "location": "production",
+        "method": "bespoke:agent_shape[F1,F2,F3,F4,F5]",
+        "name": "triage_ticket",
+        "source_files": [
+          "app.py"
+        ]
+      },
+      "fact_type": "AgentDefF",
+      "id": "agent:bespoke:triage-ticket",
+      "type": "A"
+    },
+    {
+      "fact": {
+        "api_style": "unknown",
+        "confidence": "high",
+        "deployment": null,
+        "endpoint": null,
+        "evidence": [
+          "reporting.py:12-12"
+        ],
+        "id": "model:16ce67b1e991",
+        "method": "attribution:literal",
+        "model": "legacy-1",
+        "provider": null,
+        "source_files": [
+          "reporting.py"
+        ],
+        "task": "chat"
+      },
+      "fact_type": "ModelRefF",
+      "id": "model:16ce67b1e991",
+      "type": "M"
+    },
+    {
+      "fact": {
+        "api_style": "openai",
+        "confidence": "high",
+        "deployment": null,
+        "endpoint": "https://llm.bank.internal/api/ask",
+        "evidence": [
+          "batch.py:18-18"
+        ],
+        "id": "model:383c1ebb59f3",
+        "method": "attribution:unresolved",
+        "model": {
+          "unresolved": "unbound"
+        },
+        "provider": "org-gateway",
+        "source_files": [
+          "batch.py"
+        ],
+        "task": "chat"
+      },
+      "fact_type": "ModelRefF",
+      "id": "model:383c1ebb59f3",
+      "type": "M"
+    },
+    {
+      "fact": {
+        "api_style": "openai",
+        "confidence": "high",
+        "deployment": null,
+        "endpoint": "https://llm.bank.internal/v1/chat/completions",
+        "evidence": [
+          "app.py:36-36"
+        ],
+        "id": "model:5a13d00c4bd1",
+        "method": "attribution:wrapper_default",
+        "model": "bank-small-1",
+        "provider": null,
+        "source_files": [
+          "app.py"
+        ],
+        "task": "chat"
+      },
+      "fact_type": "ModelRefF",
+      "id": "model:5a13d00c4bd1",
+      "type": "M"
+    },
+    {
+      "fact": {
+        "confidence": "high",
+        "content": "You triage IT support tickets.",
+        "content_hash": "82f86e65df4a",
+        "dynamic": false,
+        "evidence": [
+          "app.py:36-36"
+        ],
+        "file_ref": null,
+        "id": "prompt:82f86e65df4a",
+        "method": "sink:first_system_message",
+        "origin": "literal",
+        "source_files": [
+          "app.py"
+        ]
+      },
+      "fact_type": "PromptDefF",
+      "id": "prompt:82f86e65df4a",
+      "type": "I"
+    },
+    {
+      "fact": {
+        "backing": null,
+        "confidence": "high",
+        "evidence": [
+          "app.py:31-34"
+        ],
+        "id": "state:197fb0a25c75",
+        "kind": "messages",
+        "method": "bespoke:agent_shape[F1,F2,F3,F4,F5]",
+        "source_files": [
+          "app.py"
+        ]
+      },
+      "fact_type": "StateDefF",
+      "id": "state:197fb0a25c75",
+      "type": "S"
+    },
+    {
+      "fact": {
+        "auth_verb": "POST",
+        "confidence": "high",
+        "credential_ref": null,
+        "evidence": [
+          "app.py:17-23"
+        ],
+        "external_target": "itsm.internal.example",
+        "id": "tool:app.open_ticket",
+        "kind": "function",
+        "method": "bespoke:agent_shape[F1,F2,F3,F4,F5]",
+        "name": "open_ticket",
+        "side_effects": [
+          "external_send"
+        ],
+        "signature": {
+          "params": [
+            "summary"
+          ],
+          "returns": null
+        },
+        "source_files": [
+          "app.py"
+        ]
+      },
+      "fact_type": "ToolDefF",
+      "id": "tool:app.open_ticket",
+      "type": "C"
+    },
+    {
+      "fact": {
+        "auth_verb": null,
+        "confidence": "high",
+        "credential_ref": null,
+        "evidence": [
+          "app.py:11-14"
+        ],
+        "external_target": null,
+        "id": "tool:app.restart_host",
+        "kind": "function",
+        "method": "bespoke:agent_shape[F1,F2,F3,F4,F5]",
+        "name": "restart_host",
+        "side_effects": [
+          "code_exec"
+        ],
+        "signature": {
+          "params": [
+            "hostname"
+          ],
+          "returns": null
+        },
+        "source_files": [
+          "app.py"
+        ]
+      },
+      "fact_type": "ToolDefF",
+      "id": "tool:app.restart_host",
+      "type": "C"
+    },
+    {
+      "fact": {
+        "confidence": "high",
+        "evidence": [
+          "reporting.py:12-12"
+        ],
+        "id": "usage:c37aca80d525",
+        "in_agent": false,
+        "method": "sink:wrapper",
+        "model_id": "model:16ce67b1e991",
+        "prompt_id": null,
+        "source_files": [
+          "reporting.py"
+        ],
+        "task": "chat"
+      },
+      "fact_type": "LLMCallSiteF",
+      "id": "usage:c37aca80d525",
+      "type": "L"
+    },
+    {
+      "fact": {
+        "confidence": "high",
+        "evidence": [
+          "batch.py:18-18"
+        ],
+        "id": "usage:d0172f9cc2b2",
+        "in_agent": false,
+        "method": "sink:host",
+        "model_id": "model:383c1ebb59f3",
+        "prompt_id": null,
+        "source_files": [
+          "batch.py"
+        ],
+        "task": "chat"
+      },
+      "fact_type": "LLMCallSiteF",
+      "id": "usage:d0172f9cc2b2",
+      "type": "L"
+    }
+  ]
+}

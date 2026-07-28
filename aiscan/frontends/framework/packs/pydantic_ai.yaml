@@ -1,0 +1,32 @@
+# PydanticAI rule pack (SPEC §6.6). Matching is on resolved identity.
+# `Agent('openai:gpt-4o', system_prompt=..., tools=[...])` — the model is the
+# first positional argument (a provider:model string or a Model instance); the
+# agent name is usually the assigned variable. Tools are registered inline or
+# via the instance-method decorators `@agent.tool` / `@agent.tool_plain`.
+framework: pydantic-ai
+version: "0.1"
+rules:
+  - id: pydantic_ai.agent_ctor
+    match:
+      kind: call
+      callee_fqname: pydantic_ai.Agent
+    extract:
+      name: {arg: __assign_target__, resolve: string}
+      model: {arg: [0, model, llm], resolve: model_ref}
+      instructions: {arg: [system_prompt, instructions, system_message], resolve: prompt}
+      tools: {arg: [tools, functions], resolve: ref_list}
+    model_defaults: {api_style: openai, provider: openai}
+    emit:
+      - {fact: AgentDef, name: $name}
+      - {fact: BindModel, model: $model}
+      - {fact: BindPrompt, prompt: $instructions}
+      - {fact: BindComponents, items: $tools}
+
+  - id: pydantic_ai.tool_decorator
+    match:
+      kind: decorator
+      callee_fqname:
+        - pydantic_ai.Agent.tool
+        - pydantic_ai.Agent.tool_plain
+    emit:
+      - {fact: ToolFromDef}

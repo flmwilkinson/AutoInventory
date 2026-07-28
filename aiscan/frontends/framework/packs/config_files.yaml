@@ -1,0 +1,25 @@
+# Framework-agnostic config-side rules (SPEC §6.6): MCP config files, prompt
+# artefacts, SKILL.md declared tools.
+framework: config-files
+version: "0.1"
+rules:
+  - id: config.mcp_json
+    match:
+      kind: config_file
+      glob: [".mcp.json", "mcp.json"]
+    emit:
+      - {fact: MCPFromConfig}
+
+  - id: config.prompt_files
+    match:
+      kind: config_file
+      glob: ["prompts/**", "*.prompt", "system*.md"]
+    emit:
+      - {fact: PromptFromFile}
+
+  - id: config.skill_md
+    match:
+      kind: config_file
+      glob: ["SKILL.md"]
+    emit:
+      - {fact: ToolFromSkill}

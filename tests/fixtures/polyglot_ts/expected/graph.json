@@ -1,0 +1,119 @@
+{
+  "edges": [
+    {
+      "attrs": {},
+      "dst": "model:66e2518d7372",
+      "evidence": [
+        "src/evidence-agent.ts:6-23"
+      ],
+      "family": "ACDG",
+      "src": "agent:bespoke:runevidenceagent",
+      "type": "bind_model"
+    },
+    {
+      "attrs": {},
+      "dst": "prompt:4f90feef34c2",
+      "evidence": [
+        "src/evidence-agent.ts:6-23"
+      ],
+      "family": "ACDG",
+      "src": "agent:bespoke:runevidenceagent",
+      "type": "bind_prompt"
+    },
+    {
+      "attrs": {},
+      "dst": "state:e2e416d354c4",
+      "evidence": [
+        "src/evidence-agent.ts:6-23"
+      ],
+      "family": "ACDG",
+      "src": "agent:bespoke:runevidenceagent",
+      "type": "bind_state"
+    }
+  ],
+  "nodes": [
+    {
+      "fact": {
+        "confidence": "medium",
+        "entrypoint": false,
+        "evidence": [
+          "src/evidence-agent.ts:6-23"
+        ],
+        "framework": null,
+        "id": "agent:bespoke:runevidenceagent",
+        "kind": "bespoke",
+        "language": "typescript",
+        "location": "production",
+        "method": "bespoke:agent_shape[F1,F4,F5]",
+        "name": "runEvidenceAgent",
+        "source_files": [
+          "src/evidence-agent.ts"
+        ]
+      },
+      "fact_type": "AgentDefF",
+      "id": "agent:bespoke:runevidenceagent",
+      "type": "A"
+    },
+    {
+      "fact": {
+        "api_style": "openai",
+        "confidence": "high",
+        "deployment": null,
+        "endpoint": null,
+        "evidence": [
+          "src/evidence-agent.ts:12-16"
+        ],
+        "id": "model:66e2518d7372",
+        "method": "attribution:literal",
+        "model": "gpt-4o",
+        "provider": "openai",
+        "source_files": [
+          "src/evidence-agent.ts"
+        ],
+        "task": "chat"
+      },
+      "fact_type": "ModelRefF",
+      "id": "model:66e2518d7372",
+      "type": "M"
+    },
+    {
+      "fact": {
+        "confidence": "high",
+        "content": "You gather evidence for document generation.",
+        "content_hash": "4f90feef34c2",
+        "dynamic": false,
+        "evidence": [
+          "src/evidence-agent.ts:12-16"
+        ],
+        "file_ref": null,
+        "id": "prompt:4f90feef34c2",
+        "method": "sink:first_system_message",
+        "origin": "literal",
+        "source_files": [
+          "src/evidence-agent.ts"
+        ]
+      },
+      "fact_type": "PromptDefF",
+      "id": "prompt:4f90feef34c2",
+      "type": "I"
+    },
+    {
+      "fact": {
+        "backing": null,
+        "confidence": "medium",
+        "evidence": [
+          "src/evidence-agent.ts:7-10"
+        ],
+        "id": "state:e2e416d354c4",
+        "kind": "messages",
+        "method": "bespoke:agent_shape[F1,F4,F5]",
+        "source_files": [
+          "src/evidence-agent.ts"
+        ]
+      },
+      "fact_type": "StateDefF",
+      "id": "state:e2e416d354c4",
+      "type": "S"
+    }
+  ]
+}

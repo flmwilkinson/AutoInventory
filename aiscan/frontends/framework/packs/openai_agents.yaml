@@ -1,0 +1,86 @@
+# OpenAI Agents SDK rule pack (SPEC §6.6). Matching is on resolved identity.
+framework: openai-agents
+version: "0.1"
+rules:
+  - id: openai_agents.agent_ctor
+    match:
+      kind: call
+      callee_fqname: agents.Agent
+    extract:
+      name: {arg: name, resolve: string, required: true}
+      model: {arg: model, resolve: model_ref}
+      instructions: {arg: instructions, resolve: prompt}
+      tools: {arg: tools, resolve: ref_list}
+      handoffs: {arg: handoffs, resolve: ref_list}
+      mcp_servers: {arg: mcp_servers, resolve: ref_list}
+    model_defaults:
+      api_style: openai
+      provider: openai
+      default_ref: agents.models.default_models.get_default_model
+    emit:
+      - {fact: AgentDef, name: $name}
+      - {fact: BindModel, model: $model}
+      - {fact: BindPrompt, prompt: $instructions}
+      - {fact: BindComponents, items: $tools}
+      - {fact: Transfer, targets: $handoffs, kind: handoff}
+      - {fact: BindComponents, items: $mcp_servers}
+
+  - id: openai_agents.realtime_agent_ctor
+    match:
+      kind: call
+      callee_fqname:
+        - agents.realtime.RealtimeAgent
+        - agents.RealtimeAgent
+    extract:
+      name: {arg: name, resolve: string, required: true}
+      # RealtimeAgent has no model kwarg — the session model is runner
+      # config; the pack default_ref names the framework's code default.
+      model: {arg: model, resolve: model_ref}
+      instructions: {arg: instructions, resolve: prompt}
+      tools: {arg: tools, resolve: ref_list}
+      handoffs: {arg: handoffs, resolve: ref_list}
+      mcp_servers: {arg: mcp_servers, resolve: ref_list}
+    model_defaults:
+      api_style: openai
+      provider: openai
+      default_ref: agents.realtime.openai_realtime.DEFAULT_REALTIME_MODEL
+    emit:
+      - {fact: AgentDef, name: $name}
+      - {fact: BindModel, model: $model}
+      - {fact: BindPrompt, prompt: $instructions}
+      - {fact: BindComponents, items: $tools}
+      - {fact: Transfer, targets: $handoffs, kind: handoff}
+      - {fact: BindComponents, items: $mcp_servers}
+
+  - id: openai_agents.function_tool
+    match:
+      kind: decorator
+      callee_fqname: agents.function_tool
+    emit:
+      - {fact: ToolFromDef}
+
+  - id: openai_agents.hosted_mcp
+    match:
+      kind: call
+      callee_fqname:
+        - agents.HostedMCPTool
+        - agents.mcp.MCPServerStdio
+        - agents.MCPServerStdio
+        - agents.mcp.MCPServerSse
+        - agents.MCPServerSse
+        - agents.mcp.MCPServerStreamableHttp
+        - agents.MCPServerStreamableHttp
+    emit:
+      - {fact: MCPFromCall}
+
+  - id: openai_agents.runner_run
+    match:
+      kind: call
+      callee_fqname:
+        - agents.Runner.run
+        - agents.Runner.run_sync
+        - agents.Runner.run_streamed
+    extract:
+      agent: {arg: 0, resolve: ref}
+    emit:
+      - {fact: MarkEntrypoint, agent: $agent}

@@ -1,0 +1,201 @@
+{
+  "edges": [
+    {
+      "attrs": {},
+      "dst": "model:7a7e3e6e890b",
+      "evidence": [
+        "src/loop.ts:13-39"
+      ],
+      "family": "ACDG",
+      "src": "agent:bespoke:runagent",
+      "type": "bind_model"
+    },
+    {
+      "attrs": {},
+      "dst": "prompt:820e9c117592",
+      "evidence": [
+        "src/loop.ts:13-39"
+      ],
+      "family": "ACDG",
+      "src": "agent:bespoke:runagent",
+      "type": "bind_prompt"
+    },
+    {
+      "attrs": {},
+      "dst": "state:05ff6b3a5830",
+      "evidence": [
+        "src/loop.ts:13-39"
+      ],
+      "family": "ACDG",
+      "src": "agent:bespoke:runagent",
+      "type": "bind_state"
+    },
+    {
+      "attrs": {},
+      "dst": "tool:src/tools/lookup.lookupAccount",
+      "evidence": [
+        "src/loop.ts:13-39"
+      ],
+      "family": "ACDG",
+      "src": "agent:bespoke:runagent",
+      "type": "bind_tool"
+    },
+    {
+      "attrs": {},
+      "dst": "tool:src/tools/pay.sendPayment",
+      "evidence": [
+        "src/loop.ts:13-39"
+      ],
+      "family": "ACDG",
+      "src": "agent:bespoke:runagent",
+      "type": "bind_tool"
+    }
+  ],
+  "nodes": [
+    {
+      "fact": {
+        "confidence": "high",
+        "entrypoint": false,
+        "evidence": [
+          "src/loop.ts:13-39"
+        ],
+        "framework": null,
+        "id": "agent:bespoke:runagent",
+        "kind": "bespoke",
+        "language": "typescript",
+        "location": "production",
+        "method": "bespoke:agent_shape[F1,F2,F4,F5]",
+        "name": "runAgent",
+        "source_files": [
+          "src/loop.ts"
+        ]
+      },
+      "fact_type": "AgentDefF",
+      "id": "agent:bespoke:runagent",
+      "type": "A"
+    },
+    {
+      "fact": {
+        "api_style": "openai",
+        "confidence": "medium",
+        "deployment": null,
+        "endpoint": "https://gw.internal.example/llm/v1/chat",
+        "evidence": [
+          "src/loop.ts:19-27"
+        ],
+        "id": "model:7a7e3e6e890b",
+        "method": "attribution:constant",
+        "model": "internal-x1",
+        "provider": "org-gateway",
+        "source_files": [
+          "src/loop.ts"
+        ],
+        "task": "chat"
+      },
+      "fact_type": "ModelRefF",
+      "id": "model:7a7e3e6e890b",
+      "type": "M"
+    },
+    {
+      "fact": {
+        "confidence": "high",
+        "content": "You are the ops assistant. Help with account operations.",
+        "content_hash": "820e9c117592",
+        "dynamic": false,
+        "evidence": [
+          "src/loop.ts:19-27"
+        ],
+        "file_ref": null,
+        "id": "prompt:820e9c117592",
+        "method": "sink:first_system_message",
+        "origin": "literal",
+        "source_files": [
+          "src/loop.ts"
+        ]
+      },
+      "fact_type": "PromptDefF",
+      "id": "prompt:820e9c117592",
+      "type": "I"
+    },
+    {
+      "fact": {
+        "backing": null,
+        "confidence": "high",
+        "evidence": [
+          "src/loop.ts:14-17"
+        ],
+        "id": "state:05ff6b3a5830",
+        "kind": "messages",
+        "method": "bespoke:agent_shape[F1,F2,F4,F5]",
+        "source_files": [
+          "src/loop.ts"
+        ]
+      },
+      "fact_type": "StateDefF",
+      "id": "state:05ff6b3a5830",
+      "type": "S"
+    },
+    {
+      "fact": {
+        "auth_verb": null,
+        "confidence": "high",
+        "credential_ref": null,
+        "evidence": [
+          "src/tools/lookup.ts:1-6"
+        ],
+        "external_target": null,
+        "id": "tool:src/tools/lookup.lookupAccount",
+        "kind": "function",
+        "method": "bespoke:agent_shape[F1,F2,F4,F5]",
+        "name": "lookupAccount",
+        "side_effects": [
+          "read"
+        ],
+        "signature": {
+          "params": [
+            "args"
+          ],
+          "returns": null
+        },
+        "source_files": [
+          "src/loop.ts"
+        ]
+      },
+      "fact_type": "ToolDefF",
+      "id": "tool:src/tools/lookup.lookupAccount",
+      "type": "C"
+    },
+    {
+      "fact": {
+        "auth_verb": "POST",
+        "confidence": "high",
+        "credential_ref": {
+          "symbolic": "env:PAYMENTS_TOKEN"
+        },
+        "evidence": [
+          "src/tools/pay.ts:1-8"
+        ],
+        "external_target": "payments-core.internal",
+        "id": "tool:src/tools/pay.sendPayment",
+        "kind": "function",
+        "method": "bespoke:agent_shape[F1,F2,F4,F5]",
+        "name": "sendPayment",
+        "side_effects": [
+          "external_send"
+        ],
+        "signature": {
+          "params": [
+            "args"
+          ],
+          "returns": null
+        },
+        "source_files": [
+          "src/loop.ts"
+        ]
+      },
+      "fact_type": "ToolDefF",
+      "id": "tool:src/tools/pay.sendPayment",
+      "type": "C"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+# Fully-configured org pack (SPEC-3 derived_indicators fixture): the internal
+# gateway is APPROVED here, and payment rails are declared so moves_money derives.
+gateway_hosts:
+  - gw.internal.example
+known_wrapper_packages: []
+sensitive_hosts:
+  - payments-core.internal
+payment_hosts:
+  - payments-core.internal

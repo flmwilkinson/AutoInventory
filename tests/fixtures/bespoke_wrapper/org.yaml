@@ -1,0 +1,7 @@
+gateway_hosts:
+  - llm.bank.internal
+known_wrapper_packages:
+  - fqname: legacy_ai.OldClient
+    attribution: passthrough
+sensitive_hosts:
+  - itsm.internal.example

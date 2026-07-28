@@ -1,0 +1,89 @@
+{
+  "edges": [
+    {
+      "attrs": {},
+      "dst": "model:71585868a217",
+      "evidence": [
+        "summarise.py:9-15"
+      ],
+      "family": "ACDG",
+      "src": "usage:0a56dd610eba",
+      "type": "uses_model"
+    },
+    {
+      "attrs": {},
+      "dst": "prompt:d95f08744b1e",
+      "evidence": [
+        "summarise.py:9-15"
+      ],
+      "family": "ACDG",
+      "src": "usage:0a56dd610eba",
+      "type": "uses_prompt"
+    }
+  ],
+  "nodes": [
+    {
+      "fact": {
+        "api_style": "openai",
+        "confidence": "high",
+        "deployment": null,
+        "endpoint": null,
+        "evidence": [
+          "summarise.py:9-15"
+        ],
+        "id": "model:71585868a217",
+        "method": "attribution:literal",
+        "model": "gpt-4o-mini",
+        "provider": "openai",
+        "source_files": [
+          "summarise.py"
+        ],
+        "task": "chat"
+      },
+      "fact_type": "ModelRefF",
+      "id": "model:71585868a217",
+      "type": "M"
+    },
+    {
+      "fact": {
+        "confidence": "high",
+        "content": "Summarise in one paragraph.",
+        "content_hash": "d95f08744b1e",
+        "dynamic": false,
+        "evidence": [
+          "summarise.py:9-15"
+        ],
+        "file_ref": null,
+        "id": "prompt:d95f08744b1e",
+        "method": "sink:first_system_message",
+        "origin": "literal",
+        "source_files": [
+          "summarise.py"
+        ]
+      },
+      "fact_type": "PromptDefF",
+      "id": "prompt:d95f08744b1e",
+      "type": "I"
+    },
+    {
+      "fact": {
+        "confidence": "high",
+        "evidence": [
+          "summarise.py:9-15"
+        ],
+        "id": "usage:0a56dd610eba",
+        "in_agent": false,
+        "method": "sink:sdk",
+        "model_id": "model:71585868a217",
+        "prompt_id": "prompt:d95f08744b1e",
+        "source_files": [
+          "summarise.py"
+        ],
+        "task": "chat"
+      },
+      "fact_type": "LLMCallSiteF",
+      "id": "usage:0a56dd610eba",
+      "type": "L"
+    }
+  ]
+}
