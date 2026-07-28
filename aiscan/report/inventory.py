@@ -177,20 +177,31 @@ def dv(record: Record, field: str) -> JsonRepr:
 
 def coverage_banner(record: Record) -> str:
     """Partial-coverage warning: the difference between "no AI found" and
-    "no AI found in the part we can see" — pinned above everything."""
+    "no AI found in the part we can see" — pinned above everything. A bank must
+    never read absence as assurance, so every coverage gap (unsupported
+    languages AND files that failed to parse) qualifies the negative
+    attestation (SPEC_INVENTORY)."""
     unanalysed = {
         ext: n
         for ext, n in record.scan_health.language_files.items()
         if ext not in PIPELINE_EXTS and n > 0
     }
-    if not unanalysed:
+    parse_errors = len(record.scan_health.parse_errors)
+    if not unanalysed and not parse_errors:
         return ""
-    counts = ", ".join(
-        f"{n} &times; <code>{esc(ext)}</code>" for ext, n in sorted(unanalysed.items())
-    )
+    gaps: list[str] = []
+    if unanalysed:
+        counts = ", ".join(
+            f"{n} &times; <code>{esc(ext)}</code>" for ext, n in sorted(unanalysed.items())
+        )
+        gaps.append(f"not analysed: {counts} source files")
+    if parse_errors:
+        gaps.append(
+            f"{parse_errors} file{'s' if parse_errors != 1 else ''} could not be parsed"
+        )
     return (
         "<p class=note><b>&#9888; Partial coverage:</b> aiscan analyses Python "
-        f"and TypeScript/JavaScript. Not analysed: {counts} source files. Any AI "
+        f"and TypeScript/JavaScript. Coverage gaps &mdash; {'; '.join(gaps)}. Any AI "
         "usage in that code is <b>not</b> reflected in this record.</p>"
     )
 
