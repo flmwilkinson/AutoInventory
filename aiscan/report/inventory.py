@@ -28,6 +28,14 @@ from aiscan.parse.registry import PIPELINE_EXTS
 
 PROMPT_CAP = 2000
 
+# SPEC_INVENTORY: liveness is a confidence tier (emphasis), never proof of runtime
+# execution — the labels say so, and "defined" is never phrased as "dormant".
+_LIVENESS_LABEL = {
+    "invoked": "invoked — an invocation site (e.g. a run call) was detected",
+    "reachable": "reachable — handed off to from an invoked agent",
+    "defined": "defined in code — not confirmed reachable from an entrypoint",
+}
+
 CSP = (
     "default-src 'none'; style-src 'unsafe-inline'; "
     "script-src 'unsafe-inline'; img-src data:"
@@ -384,6 +392,27 @@ def _agent_card(
             "<dt>Foundation model</dt><dd><span class=meta>not determined "
             "from code</span></dd>"
         )
+    # SPEC_INVENTORY: governed-model reconciliation — flag an external vendor
+    # endpoint on the agent's own model, and note when >1 model is bound.
+    if agent.model is not None and agent.model.provider_class == "vendor_external":
+        rows.append(
+            "<dt>Model provider</dt><dd>external vendor endpoint"
+            + (
+                " <span class=meta>(+ more models bound — see record.json)</span>"
+                if agent.has_additional_models
+                else ""
+            )
+            + "</dd>"
+        )
+    elif agent.has_additional_models:
+        rows.append(
+            "<dt>Model provider</dt><dd><span class=meta>more than one model bound "
+            "— see record.json</span></dd>"
+        )
+    # SPEC_INVENTORY: liveness tier — a confidence signal (emphasis), not proof.
+    liveness = agent.liveness.value if agent.liveness else None
+    if isinstance(liveness, str):
+        rows.append(f"<dt>Liveness</dt><dd>{_LIVENESS_LABEL.get(liveness, esc(liveness))}</dd>")
     # Tools, joined inline with plain-English effects.
     tool_bits: list[str] = []
     cred_refs: list[str] = []
@@ -493,9 +522,12 @@ def _agent_card(
             "from analysed code — the prompt may be assembled at runtime</span></p>"
         )
     lang = f"<span class=chip>{esc(agent.language)}</span>"
+    live = agent.liveness.value if agent.liveness else None
+    live_chip = f" <span class=chip>{esc(live)}</span>" if isinstance(live, str) else ""
     return (
         f"<details id='agent-{esc(agent.agent_id)}'{' open' if open_card else ''}>"
-        f"<summary>{esc(agent.agent_id)} {lang}</summary><div>{body}</div></details>"
+        f"<summary>{esc(agent.agent_id)} {lang}{live_chip}</summary>"
+        f"<div>{body}</div></details>"
     )
 
 
