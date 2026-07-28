@@ -222,6 +222,9 @@ def build_record(
                     ),
                     location=fact.location,
                     language=fact.language,
+                    # SPEC_INVENTORY: carry the (previously-dropped) invocation
+                    # signal onto the record so liveness can be derived.
+                    is_entrypoint=fact.entrypoint,
                     model=model_binding,
                     system_prompt=prompt_binding,
                     tools=tuple(

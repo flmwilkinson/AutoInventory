@@ -47,7 +47,15 @@
         "value": null
       },
       "handoffs": [],
+      "is_entrypoint": false,
       "language": "python",
+      "liveness": {
+        "evidence": [
+          "agent.py:18-18"
+        ],
+        "source": "derived",
+        "value": "defined"
+      },
       "location": "production",
       "mcp_servers": [],
       "model": {

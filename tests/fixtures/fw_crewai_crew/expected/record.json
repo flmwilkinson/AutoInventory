@@ -47,7 +47,15 @@
         "value": null
       },
       "handoffs": [],
+      "is_entrypoint": false,
       "language": "python",
+      "liveness": {
+        "evidence": [
+          "crew.py:23-28"
+        ],
+        "source": "derived",
+        "value": "defined"
+      },
       "location": "production",
       "mcp_servers": [],
       "model": {
@@ -138,7 +146,15 @@
         "value": null
       },
       "handoffs": [],
+      "is_entrypoint": false,
       "language": "python",
+      "liveness": {
+        "evidence": [
+          "crew.py:15-21"
+        ],
+        "source": "derived",
+        "value": "defined"
+      },
       "location": "production",
       "mcp_servers": [],
       "model": {

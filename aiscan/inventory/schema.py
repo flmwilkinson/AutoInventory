@@ -209,11 +209,20 @@ class AgentRecord(BaseModel):
     handoffs: tuple[str, ...] = ()
     # [D] route-transfer targets (SPEC-3: surfaced for role_class + graph view).
     routes: tuple[str, ...] = ()
+    # [D] SPEC_INVENTORY: an invocation site for this agent was detected (e.g. a
+    # Runner.run). A *site*, not proof of runtime execution — it seeds the
+    # liveness tier, it does not assert the agent runs.
+    is_entrypoint: bool = False
     # [D derived] SPEC-3 §3.2
     role_class: DerivedValue | None = None
     autonomy_level: DerivedValue | None = None
     capability_flags: DerivedValue | None = None
     reachable_tools: DerivedValue | None = None
+    # [D derived] SPEC_INVENTORY liveness *tier* (never a boolean, never "dormant"):
+    # "invoked" (entrypoint site detected) | "reachable" (reached from an invoked
+    # agent via handoff/route) | "defined" (present; liveness unconfirmed —
+    # includes frameworks without entrypoint coverage). Weights emphasis only.
+    liveness: DerivedValue | None = None
     # [E] enrichment
     agent_summary: EnrichedSlot = EnrichedSlot()
     responsibilities: EnrichedSlot = EnrichedSlot()

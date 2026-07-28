@@ -47,7 +47,15 @@
         "value": null
       },
       "handoffs": [],
+      "is_entrypoint": false,
       "language": "typescript",
+      "liveness": {
+        "evidence": [
+          "src/evidence-agent.ts:6-23"
+        ],
+        "source": "derived",
+        "value": "defined"
+      },
       "location": "production",
       "mcp_servers": [],
       "model": {

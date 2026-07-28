@@ -106,6 +106,25 @@ class TestWriteThrough:
         # bespoke_llm_call_only issues a bare LLM call -> at least one usage row.
         assert len(tables["model_usages"]) >= 1
 
+    def test_agent_tools_bridge_and_liveness(self, tmp_path: Path) -> None:
+        # SPEC_INVENTORY: the agent->tool join is now answerable, and the
+        # liveness tier is surfaced onto the agent row.
+        import json
+
+        from aiscan.dataset.store import _COLUMNS, dump_tables, upsert_record
+        from tests.harness import run_fixture
+
+        scan_dir = run_fixture("fw_openai_agents_basic", tmp_path / "s")
+        rec = json.loads((scan_dir / "record.json").read_text(encoding="utf-8"))
+        db = tmp_path / "inv.db"
+        upsert_record(db, rec)
+        tables = dump_tables(db)
+        assert tables["agent_tools"], "agent->tool bridge should link >=1 tool"
+        live_idx = _COLUMNS["agents"].index("liveness")
+        tiers = {r[live_idx] for r in tables["agents"]}
+        assert "invoked" in tiers  # the Runner.run target
+        assert tiers <= {"invoked", "reachable", "defined"}  # never a hard "dormant"
+
     def test_bom_diff_reports_removed_agent(
         self, records_root: Path, tmp_path: Path
     ) -> None:

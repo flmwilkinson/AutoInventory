@@ -47,7 +47,15 @@
         "value": null
       },
       "handoffs": [],
+      "is_entrypoint": false,
       "language": "python",
+      "liveness": {
+        "evidence": [
+          "main.py:23-28"
+        ],
+        "source": "derived",
+        "value": "reachable"
+      },
       "location": "production",
       "mcp_servers": [],
       "model": {
@@ -144,7 +152,15 @@
       "handoffs": [
         "billing-agent"
       ],
+      "is_entrypoint": true,
       "language": "python",
+      "liveness": {
+        "evidence": [
+          "main.py:30-36"
+        ],
+        "source": "derived",
+        "value": "invoked"
+      },
       "location": "production",
       "mcp_servers": [
         "docs"

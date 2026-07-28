@@ -47,7 +47,15 @@
         "value": null
       },
       "handoffs": [],
+      "is_entrypoint": false,
       "language": "typescript",
+      "liveness": {
+        "evidence": [
+          "src/app.ts:3-7"
+        ],
+        "source": "derived",
+        "value": "defined"
+      },
       "location": "production",
       "mcp_servers": [],
       "model": {
@@ -140,7 +148,15 @@
       "handoffs": [
         "spanish-agent"
       ],
+      "is_entrypoint": false,
       "language": "typescript",
+      "liveness": {
+        "evidence": [
+          "src/app.ts:9-14"
+        ],
+        "source": "derived",
+        "value": "defined"
+      },
       "location": "production",
       "mcp_servers": [],
       "model": {

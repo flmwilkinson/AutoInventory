@@ -133,20 +133,29 @@ def flatten(record: dict[str, Any]) -> dict[str, list[Row]]:
     ]
 
     agents: list[Row] = []
+    agent_tools: list[Row] = []
     for agent in record.get("agents") or []:
         detection = agent.get("detection") or {}
         model = agent.get("model") or {}
         agent_flags = _slot_value(agent, "capability_flags")
         agent_flags = agent_flags if isinstance(agent_flags, dict) else {}
         reachable = _slot_value(agent, "reachable_tools")
+        agent_id = agent.get("agent_id")
+        # SPEC_INVENTORY: the agent->tool bridge — makes "which agents use tool X"
+        # / "what tools does agent Y call" answerable (only tool_count survived before).
+        for tool_id in agent.get("tools") or []:
+            agent_tools.append({**key, "agent_id": agent_id, "tool_id": tool_id})
         agents.append(
             {
                 **key,
-                "agent_id": agent.get("agent_id"),
+                "agent_id": agent_id,
                 "location": agent.get("location"),
                 "language": agent.get("language"),
                 "role_class": _slot_value(agent, "role_class"),
                 "autonomy_level": _slot_value(agent, "autonomy_level"),
+                # SPEC_INVENTORY: liveness tier + the raw invocation signal.
+                "liveness": _slot_value(agent, "liveness"),
+                "is_entrypoint": bool(agent.get("is_entrypoint")),
                 "model_value": _j(model.get("value")),
                 "model_endpoint": _j(model.get("endpoint")),
                 "api_style": model.get("api_style"),
@@ -247,6 +256,7 @@ def flatten(record: dict[str, Any]) -> dict[str, list[Row]]:
     return {
         "systems": systems,
         "agents": agents,
+        "agent_tools": agent_tools,
         "tools": tools,
         "models": models,
         "findings": findings,

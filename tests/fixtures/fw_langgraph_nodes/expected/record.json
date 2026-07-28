@@ -49,7 +49,16 @@
         "value": null
       },
       "handoffs": [],
+      "is_entrypoint": false,
       "language": "python",
+      "liveness": {
+        "evidence": [
+          "pipeline.py:34-34",
+          "pipeline.py:10-10"
+        ],
+        "source": "derived",
+        "value": "defined"
+      },
       "location": "production",
       "mcp_servers": [],
       "model": {

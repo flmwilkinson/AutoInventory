@@ -164,12 +164,45 @@ def _reachable_tools(agent: AgentRecord, agents_by_id: dict[str, AgentRecord]) -
     return tuple(sorted(tools))
 
 
+def _reached_from_entrypoints(agents_by_id: dict[str, AgentRecord]) -> set[str]:
+    """Agent ids reachable by forward closure from any invocation-detected
+    (``is_entrypoint``) agent, over handoff/route edges (SPEC_INVENTORY).
+
+    Seeded from entrypoints and returned SEPARATELY — the per-agent
+    ``reachable_tools`` closure (seeded from each agent) is left untouched."""
+    reached: set[str] = set()
+    stack = [aid for aid, a in agents_by_id.items() if a.is_entrypoint]
+    while stack:
+        current = stack.pop()
+        if current in reached:
+            continue
+        reached.add(current)
+        a = agents_by_id.get(current)
+        if a is None:
+            continue
+        stack.extend(a.handoffs)
+        stack.extend(a.routes)
+    return reached
+
+
+def _liveness(agent: AgentRecord, reached_from_entrypoints: set[str]) -> str:
+    """The liveness *tier* — emphasis, not a certainty claim. Never "dormant":
+    "defined" honestly covers both genuinely-idle agents and frameworks we lack
+    entrypoint coverage for, so a bundle with no marks is never mislabelled dead."""
+    if agent.is_entrypoint:
+        return "invoked"
+    if agent.agent_id in reached_from_entrypoints:
+        return "reachable"
+    return "defined"
+
+
 def _derive_agent(
     agent: AgentRecord,
     agents_by_id: dict[str, AgentRecord],
     in_handoffs: set[str],
     tools_by_id: dict[str, ToolRecord],
     org: OrgPack,
+    reached_from_entrypoints: set[str],
 ) -> AgentRecord:
     if agent.routes:
         role = "router"
@@ -196,6 +229,10 @@ def _derive_agent(
             "capability_flags": DerivedValue(value=flags, evidence=flag_evidence),
             "reachable_tools": DerivedValue(
                 value=list(_reachable_tools(agent, agents_by_id)),
+                evidence=agent.detection.evidence,
+            ),
+            "liveness": DerivedValue(
+                value=_liveness(agent, reached_from_entrypoints),
                 evidence=agent.detection.evidence,
             ),
         }
@@ -506,9 +543,11 @@ def derive_record(record: Record, org: OrgPack, registry: HostRegistry) -> Recor
     tools_by_id = {t.tool_id: t for t in record.tools}
     agents_by_id = {a.agent_id: a for a in record.agents}
     in_handoffs = {dst for a in record.agents for dst in (*a.handoffs, *a.routes)}
+    reached = _reached_from_entrypoints(agents_by_id)
 
     agents = [
-        _derive_agent(a, agents_by_id, in_handoffs, tools_by_id, org) for a in record.agents
+        _derive_agent(a, agents_by_id, in_handoffs, tools_by_id, org, reached)
+        for a in record.agents
     ]
     tools = [_derive_tool(t, org) for t in record.tools]
     mcp = [_derive_mcp(m) for m in record.mcp_servers]
