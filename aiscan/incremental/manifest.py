@@ -20,7 +20,6 @@ class Manifest:
 
     bundle: str
     last_scanned_commit: str
-    scan_out_dir: str
     scanner_version: str
     analysis_version: int
     # The gate compares these against the current environment; any mismatch
@@ -56,7 +55,6 @@ def read_manifest(path: Path) -> Manifest | None:
         return Manifest(
             bundle=str(data["bundle"]),
             last_scanned_commit=str(data["last_scanned_commit"]),
-            scan_out_dir=str(data["scan_out_dir"]),
             scanner_version=str(data["scanner_version"]),
             analysis_version=int(data["analysis_version"]),
             rulepack_versions=dict(data.get("rulepack_versions") or {}),

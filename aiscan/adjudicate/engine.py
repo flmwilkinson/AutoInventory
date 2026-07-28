@@ -66,6 +66,7 @@ class Adjudicator:
         base_url: str | None = None,
         model: str | None = None,
         budget: int = DEFAULT_BUDGET,
+        api_key: str | None = None,
     ) -> None:
         self.repo_root = repo_root
         self.cache_path = cache_path
@@ -74,6 +75,9 @@ class Adjudicator:
         self.model = model or DEFAULT_MODEL
         self.budget = budget
         self._call_fn = call_fn
+        # Credential supplied by the caller (SPEC-10 §4): the core never reads
+        # the environment. Falls back to the env only when nothing was injected.
+        self.api_key = api_key
         self._cache: dict[str, str] = self._load_cache()
 
     # -- cache ---------------------------------------------------------------
@@ -201,7 +205,9 @@ class Adjudicator:
         )
 
         try:
-            return build_openai_call_fn(self.base_url, self.model, self.logger)
+            return build_openai_call_fn(
+                self.base_url, self.model, self.logger, api_key=self.api_key
+            )
         except OpenAICompatibleError as exc:
             self.logger.warning("adjudication unavailable: %s", exc)
             outcome.findings.append(

@@ -17,6 +17,8 @@ from pathlib import Path
 from typing import cast
 
 from aiscan.cli import run_scan
+from aiscan.inventory.identity import identity_record
+from tests.conftest import fixture_repo
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -40,8 +42,11 @@ def normalize_report(text: str) -> str:
 
 
 def run_fixture(name: str, out_root: Path) -> Path:
-    """Scan one fixture repo (with its org pack when present)."""
-    repo = FIXTURES / name / "repo"
+    """Scan one fixture repo (with its org pack when present).
+
+    The repo is scanned from an isolated temp copy (see ``fixture_repo``) so the
+    golden scan is independent of the project's own VCS state."""
+    repo = fixture_repo(name)
     org = FIXTURES / name / "org.yaml"
     return run_scan(
         str(repo),
@@ -51,21 +56,12 @@ def run_fixture(name: str, out_root: Path) -> Path:
 
 
 def normalize_record(data: dict[str, object]) -> dict[str, object]:
-    """Strip the fields the golden compare excludes (SPEC §2: timestamps)."""
-    prov = data.get("inventory_provenance")
-    if isinstance(prov, dict):
-        prov["scanned_at"] = "<normalized>"
-        prov["org_pack"] = _normalize_path(prov.get("org_pack"))
-    health = data.get("scan_health")
-    if isinstance(health, dict):
-        health["stage_ms"] = {}
-    return data
+    """Strip the fields the golden compare excludes (SPEC §2: timestamps).
 
-
-def _normalize_path(value: object) -> object:
-    if isinstance(value, str):
-        return value.replace("\\", "/").split("/")[-1]
-    return value
+    Delegates to the production ``identity_record`` (SPEC-10 §5a) so the golden
+    compare and the store's ``(repo, commit)`` change-detection share one
+    definition of "the same scan"."""
+    return identity_record(data)
 
 
 def normalize_health(data: dict[str, object]) -> dict[str, object]:

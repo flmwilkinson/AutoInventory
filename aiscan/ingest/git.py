@@ -1,20 +1,42 @@
-"""Repository ingestion (SPEC §6.1): local paths and shallow git clones.
+"""Repository ingestion (SPEC §6.1, SPEC-10 §2): local paths and ephemeral
+blobless git clones.
 
 ``git`` is the only subprocess the scanner ever runs, and checkouts are
 read-only: we never install dependencies, never build, never execute repo code.
-For a local path with ``--commit`` we do *not* mutate the working tree; the
-requested commit is recorded but the tree is scanned as-is.
+A URL target is cloned into a temp dir (``--filter=blob:none``, full history)
+that is deleted after the scan — there is no persistent clone cache. For a local
+path with ``--commit`` we do *not* mutate the working tree; the requested commit
+is recorded but the tree is scanned as-is.
 """
 
 from __future__ import annotations
 
+import contextlib
 import logging
+import os
 import re
+import shutil
+import stat
 import subprocess
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 _GIT_TIMEOUT_S = 300
+
+
+def _force_writable(func: Any, path: Any, _exc: Any) -> None:
+    """rmtree error handler: git packs are read-only, so chmod +w and retry —
+    lets an ephemeral clone be removed on Windows."""
+    with contextlib.suppress(OSError):
+        os.chmod(path, stat.S_IWRITE)
+        func(path)
+
+
+def _rmtree(path: Path) -> None:
+    with contextlib.suppress(OSError):
+        shutil.rmtree(path, onexc=_force_writable)
 
 
 @dataclass(frozen=True, slots=True)
@@ -53,31 +75,80 @@ def _git(args: list[str], cwd: Path | None, logger: logging.Logger) -> str | Non
 
 
 def _bundle_name_from_url(url: str) -> str:
-    tail = url.rstrip("/").split("/")[-1]
+    """A filesystem-safe ``owner__repo`` slug (SPEC-10 §5b).
+
+    Keying by the URL basename alone collides across an org — ``org-a/api`` and
+    ``org-b/api`` both become ``api``. Including the owner makes the bundle name
+    a globally unique repo key (the ``repo`` half of the ``(repo, commit)`` key
+    the cache/store are keyed by). scp-style ``git@host:owner/repo`` is
+    normalised so the owner/repo tail is uniform; a host-like owner (contains a
+    dot, e.g. ``github.com``) is dropped so a bare ``host/repo`` URL doesn't
+    yield a ``github.com__repo`` slug."""
+    parts = [p for p in url.rstrip("/").replace(":", "/").split("/") if p]
+    tail = parts[-1] if parts else "repo"
     if tail.endswith(".git"):
         tail = tail[: -len(".git")]
-    return re.sub(r"[^A-Za-z0-9._-]", "-", tail) or "repo"
+    owner = parts[-2] if len(parts) >= 2 else ""
+    slug = f"{owner}__{tail}" if owner and "." not in owner else tail
+    return re.sub(r"[^A-Za-z0-9._-]", "-", slug) or "repo"
 
 
 def _looks_like_url(target: str) -> bool:
     return bool(
-        re.match(r"^(https?://|git@|ssh://|git://)", target)
+        re.match(r"^(https?://|git@|ssh://|git://|file://)", target)
         or (target.count("/") == 1 and target.endswith(".git"))
     )
 
 
-def ingest(
-    target: str,
-    commit: str | None,
-    clone_parent: Path,
-    logger: logging.Logger,
-) -> IngestResult:
-    """Materialise the scan target read-only and identify (root, url, commit)."""
+class FetchedSource:
+    """A materialised source tree with cleanup (SPEC-10 §2).
+
+    ``repo_root`` is a real directory the pipeline reads. For a URL target it is
+    an *ephemeral* clone that ``cleanup()`` deletes — nothing is persisted
+    between scans (no ``_clones/`` cache). Use as a context manager to guarantee
+    teardown even on error."""
+
+    __slots__ = ("_cleanup_dir", "result")
+
+    def __init__(self, result: IngestResult, cleanup_dir: Path | None) -> None:
+        self.result = result
+        self._cleanup_dir = cleanup_dir
+
+    @property
+    def repo_root(self) -> Path:
+        return self.result.repo_root
+
+    def cleanup(self) -> None:
+        if self._cleanup_dir is not None:
+            _rmtree(self._cleanup_dir)
+
+    def __enter__(self) -> FetchedSource:
+        return self
+
+    def __exit__(self, *exc: object) -> None:
+        self.cleanup()
+
+
+def fetch_source(
+    target: str, commit: str | None, logger: logging.Logger
+) -> FetchedSource:
+    """Materialise ``target`` read-only and return it with cleanup (SPEC-10 §2).
+
+    A local directory is scanned in place (no cleanup). A git URL is cloned
+    *ephemerally* into a temp dir — blobless, full history — which ``cleanup()``
+    removes; there is no persistent clone cache. Never installs dependencies,
+    never builds, never executes repo code."""
     local = Path(target).expanduser()
     if local.is_dir():
-        return _ingest_local(local, commit, logger)
+        return FetchedSource(_ingest_local(local, commit, logger), None)
     if _looks_like_url(target):
-        return _ingest_url(target, commit, clone_parent, logger)
+        dest = Path(tempfile.mkdtemp(prefix="aiscan-src-"))
+        try:
+            result = _clone_ephemeral(target, commit, dest, logger)
+        except BaseException:
+            shutil.rmtree(dest, ignore_errors=True)
+            raise
+        return FetchedSource(result, dest)
     raise IngestError(f"target is neither an existing directory nor a git URL: {target}")
 
 
@@ -105,32 +176,26 @@ def _ingest_local(root: Path, commit: str | None, logger: logging.Logger) -> Ing
     )
 
 
-def _ingest_url(
-    url: str, commit: str | None, clone_parent: Path, logger: logging.Logger
+def _clone_ephemeral(
+    url: str, commit: str | None, dest: Path, logger: logging.Logger
 ) -> IngestResult:
+    """Clone ``url`` into the (empty) temp dir ``dest`` for a single scan.
+
+    Blobless (``--filter=blob:none``): the full commit/tree history is present —
+    so ``git log`` provenance (owner/ai_provenance) and ``base..head`` diffs work
+    — while file blobs are fetched lazily on demand. Never ``--depth``: a shallow
+    clone would truncate the history those provenance fields read and break
+    byte-identity vs a full scan (SPEC-10 §2). The clone is discarded after the
+    scan by ``FetchedSource.cleanup``."""
     name = _bundle_name_from_url(url)
-    dest = clone_parent / name
-    if (dest / ".git").is_dir():
-        # SPEC-8: reuse an existing clone — fetch, don't re-clone. This is what
-        # makes "skip when nothing was pushed" and incremental scans cheap; the
-        # checkout stays read-only (no build, no dependency install).
-        logger.info("reusing existing clone at %s (fetch, not re-clone)", dest)
-        _git(["fetch", "--tags", "--force", "origin"], cwd=dest, logger=logger)
-    else:
-        if dest.exists():
-            raise IngestError(f"clone destination exists but is not a git repo: {dest}")
-        clone_parent.mkdir(parents=True, exist_ok=True)
-        if _git(["clone", url, str(dest)], cwd=None, logger=logger) is None:
-            raise IngestError(f"git clone failed for {url}")
+    if _git(["clone", "--filter=blob:none", url, str(dest)], cwd=None, logger=logger) is None:
+        raise IngestError(f"git clone failed for {url}")
     if commit:
+        # A pinned commit may be off the default branch — make sure it is present,
+        # then check it out. Base availability for diffs comes from full history.
         _git(["fetch", "origin", commit], cwd=dest, logger=logger)
         if _git(["checkout", "--detach", commit], cwd=dest, logger=logger) is None:
             logger.warning("checkout of %s failed; scanning current HEAD", commit[:12])
-    else:
-        # No pinned commit: advance to the remote default-branch head.
-        remote_head = _git(["rev-parse", "origin/HEAD"], cwd=dest, logger=logger)
-        if remote_head:
-            _git(["checkout", "--detach", remote_head], cwd=dest, logger=logger)
     head = _git(["rev-parse", "HEAD"], cwd=dest, logger=logger)
     return IngestResult(
         repo_root=dest,

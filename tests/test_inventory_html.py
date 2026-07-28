@@ -110,7 +110,7 @@ def test_tools_grouped_by_location_like_agents() -> None:
 
 def test_models_endpoint_union_renders_plainly() -> None:
     """A union endpoint (env-configurable base_url) renders as the canonical
-    reading, never the annex-grade '∪ … (symbolic)' machine form."""
+    reading, never the annex-grade symbolic-union '(symbolic)' machine form."""
     from aiscan.inventory.schema import DerivedBlock, DerivedValue, Record
     from aiscan.report.inventory import _models_section
 

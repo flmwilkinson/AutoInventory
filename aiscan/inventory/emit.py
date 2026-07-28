@@ -115,8 +115,11 @@ def build_record(
     ai_commit_range: dict[str, str] | None = None,
 ) -> Record:
     """Assemble the bundle record from the context, graph, and BOM."""
+    # SPEC-10 §5a: store the org-pack basename, not an absolute path — the path
+    # is non-deterministic across machines and a minor leak in a multi-tenant
+    # context; the basename is all that identifies which pack was used.
     org_pack_ref = (
-        str(ctx.settings.org_pack_path)
+        ctx.settings.org_pack_path.name
         if ctx.settings.org_pack_path
         else None
     )

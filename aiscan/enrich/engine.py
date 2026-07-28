@@ -111,14 +111,20 @@ def enrich_record(
     max_nodes: int = 200,
     max_workers: int = 4,
     include_tests: bool = False,
+    api_key: str | None = None,
 ) -> EnrichmentResult:
     """Draft [E] fields for one record; returns a new record + stats."""
     model = model or DEFAULT_MODEL
     fn = call_fn
     if fn is None:
         try:
+            # Caller-supplied credential (SPEC-10 §4); env is only a fallback.
             fn = build_openai_call_fn(
-                base_url or DEFAULT_BASE_URL, model, logger, schema_hint=SCHEMA_HINT
+                base_url or DEFAULT_BASE_URL,
+                model,
+                logger,
+                api_key=api_key,
+                schema_hint=SCHEMA_HINT,
             )
         except OpenAICompatibleError as exc:
             logger.warning("enrichment unavailable: %s", exc)

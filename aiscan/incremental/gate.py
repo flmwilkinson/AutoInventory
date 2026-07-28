@@ -97,11 +97,13 @@ def should_skip(
     scanner_version: str,
     rulepack_versions: dict[str, str],
     org_pack_digest: str,
-    scan_out_dir: Path,
+    record_present: bool,
 ) -> bool:
     """Pre-parse decision: is the target commit already scanned with identical
     inputs? At an identical commit the repo bytes are identical, so only the
-    scanner version, rulepacks, and the (external) org pack can differ."""
+    scanner version, rulepacks, and the (external) org pack can differ.
+    ``record_present`` is whether the store already holds that scan's record —
+    supplied by the caller so the gate stays free of any storage backend."""
     if manifest is None:
         return False
     return (
@@ -111,7 +113,7 @@ def should_skip(
         and manifest.analysis_version == ANALYSIS_VERSION
         and manifest.rulepack_versions == rulepack_versions
         and manifest.org_pack_hash == org_pack_digest
-        and (scan_out_dir / "record.json").is_file()
+        and record_present
     )
 
 

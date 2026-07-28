@@ -217,7 +217,6 @@ def _manifest(**overrides: object):
     defaults = dict(
         bundle="demo",
         last_scanned_commit="abc123",
-        scan_out_dir="/out/demo-abc123",
         scanner_version="aiscan 0.1.0",
         analysis_version=ANALYSIS_VERSION,
         rulepack_versions={"openai-agents": "0.1"},
@@ -241,32 +240,31 @@ class TestGate:
         assert not is_global_signal("app/agent.py")
         assert not is_global_signal("README.md")
 
-    def test_should_skip_matches(self, tmp_path: Path) -> None:
+    def test_should_skip_matches(self) -> None:
         from aiscan.incremental.gate import should_skip
 
-        (tmp_path / "record.json").write_text("{}", encoding="utf-8")
-        m = _manifest(last_scanned_commit="deadbeef", scan_out_dir=str(tmp_path))
-        assert should_skip(
-            m,
+        m = _manifest(last_scanned_commit="deadbeef")
+        common = dict(
             head_commit="deadbeef",
             scanner_version="aiscan 0.1.0",
             rulepack_versions={"openai-agents": "0.1"},
             org_pack_digest="",
-            scan_out_dir=tmp_path,
         )
+        assert should_skip(m, **common, record_present=True)  # type: ignore[arg-type]
+        # A matching manifest but no stored record cannot skip.
+        assert not should_skip(m, **common, record_present=False)  # type: ignore[arg-type]
 
-    def test_no_skip_on_version_or_commit_change(self, tmp_path: Path) -> None:
+    def test_no_skip_on_version_or_commit_change(self) -> None:
         from aiscan.incremental.gate import should_skip
 
-        (tmp_path / "record.json").write_text("{}", encoding="utf-8")
         base = dict(
             head_commit="deadbeef",
             scanner_version="aiscan 0.1.0",
             rulepack_versions={"openai-agents": "0.1"},
             org_pack_digest="",
-            scan_out_dir=tmp_path,
+            record_present=True,
         )
-        m = _manifest(last_scanned_commit="deadbeef", scan_out_dir=str(tmp_path))
+        m = _manifest(last_scanned_commit="deadbeef")
         assert not should_skip(m, **{**base, "head_commit": "other"})
         assert not should_skip(m, **{**base, "scanner_version": "aiscan 0.2.0"})
         assert not should_skip(m, **{**base, "org_pack_digest": "changed"})
